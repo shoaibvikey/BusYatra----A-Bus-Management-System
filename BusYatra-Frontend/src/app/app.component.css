@@ -1,0 +1,12 @@
+/* Smooth transition for the logout button */
+.logout-btn {
+  transition: all 0.3s ease-in-out;
+  color: white; /* Keeps the text blue normally */
+}
+
+/* Turns the button Red with White text on hover */
+.logout-btn:hover {
+  background-color: #dc3545 !important; /* Bootstrap Red */
+  color: white !important;
+  border-color: #dc3545 !important;
+}

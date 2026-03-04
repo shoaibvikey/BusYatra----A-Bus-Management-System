@@ -1,0 +1,168 @@
+<div class="container py-4">
+  
+  <div class="card shadow-sm border-0 p-4 mb-5" style="background-color: var(--white); border-radius: 15px;">
+    <h4 class="fw-bold mb-4" style="color: var(--primary-blue);">Find Your Journey</h4>
+    <div class="row g-3">
+      
+      <div class="col-md-3 col-lg-2 position-relative">
+        <label class="small fw-bold text-secondary">FROM</label>
+        <input type="text" [(ngModel)]="fromCity" class="form-control" placeholder="Source City" autocomplete="off"
+               (keyup)="filterFromCities()" (focus)="filterFromCities()" (blur)="hideFromDropdown()">
+               
+        <ul class="dropdown-menu w-100 show shadow-sm border-0 mt-1" *ngIf="showFromDropdown && filteredFromCities.length > 0" 
+            style="position: absolute; top: 100%; left: 0; z-index: 1050; max-height: 200px; overflow-y: auto;">
+          <li *ngFor="let city of filteredFromCities">
+            <a class="dropdown-item py-2" style="cursor: pointer;" (mousedown)="selectFromCity(city)">
+              <i class="bi bi-geo-alt-fill me-2 text-danger"></i>{{ city }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-md-3 col-lg-2 position-relative">
+        <label class="small fw-bold text-secondary">TO</label>
+        <input type="text" [(ngModel)]="toCity" class="form-control" placeholder="Destination City" autocomplete="off"
+               (keyup)="filterToCities()" (focus)="filterToCities()" (blur)="hideToDropdown()">
+               
+        <ul class="dropdown-menu w-100 show shadow-sm border-0 mt-1" *ngIf="showToDropdown && filteredToCities.length > 0" 
+            style="position: absolute; top: 100%; left: 0; z-index: 1050; max-height: 200px; overflow-y: auto;">
+          <li *ngFor="let city of filteredToCities">
+            <a class="dropdown-item py-2" style="cursor: pointer;" (mousedown)="selectToCity(city)">
+              <i class="bi bi-geo-alt-fill me-2 text-primary"></i>{{ city }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-md-3 col-lg-3">
+        <label class="small fw-bold text-secondary">DEPARTURE</label>
+        <input type="date" [(ngModel)]="travelDate" [min]="minDate" class="form-control">
+      </div>
+
+      <div class="col-md-3 col-lg-3">
+        <label class="small fw-bold text-secondary">RETURN <span class="fw-normal text-muted">(Optional)</span></label>
+        <input type="date" [(ngModel)]="returnDate" [min]="travelDate || minDate" class="form-control">
+      </div>
+
+      <div class="col-md-12 col-lg-2 d-flex align-items-end">
+        <button (click)="onSearch()" class="btn btn-primary w-100 fw-bold shadow-sm" style="background-color: var(--primary-blue); height: 38px;">
+          SEARCH
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!hasSearched" class="text-center py-5 bg-white shadow-sm border-0 mt-3" style="border-radius: 15px;">
+    <i class="bi bi-bus-front text-muted opacity-50" style="font-size: 5rem;"></i>
+    <h4 class="fw-bold text-secondary mt-3">Search to get buses</h4>
+    <p class="text-muted">Enter your route details and date above to find available journeys.</p>
+  </div>
+
+  <div *ngIf="hasSearched" class="mb-5">
+    <h5 class="fw-bold text-primary mb-3" *ngIf="buses.length > 0 || returnDate"><i class="bi bi-arrow-right-circle-fill me-2"></i>Outbound: {{ fromCity }} to {{ toCity }}</h5>
+    
+    <div *ngIf="buses.length === 0" class="alert alert-light border text-center text-muted">
+      No outward buses found on {{ travelDate }}.
+    </div>
+
+    <div *ngFor="let bus of buses" class="card mb-3 shadow-sm border-0 bus-card" style="border-radius: 10px;">
+      <div class="card-body p-4">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <h5 class="fw-bold mb-1">{{ bus.busName }}</h5> 
+            <span class="badge bg-light text-primary border">Standard</span>
+          </div>
+          
+          <div class="col-md-4 text-center">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold h5 mb-0">{{ bus.departureTime }}</div>
+                <small class="text-muted">Departure</small>
+              </div>
+              <div class="flex-grow-1 border-top mx-3 border-secondary" style="border-style: dashed !important;"></div>
+              <div>
+                <div class="fw-bold h5 mb-0">{{ bus.arrivalTime }}</div>
+                <small class="text-muted">Arrival</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5 text-end">
+            <div class="d-inline-block me-4 text-center">
+              <div class="h4 fw-bold text-success mb-0">₹{{ bus.fare }}</div>
+              <small class="text-muted fw-bold" [ngClass]="{'text-danger': bus.availableSeats <= 5, 'text-success': bus.availableSeats > 5}">
+                {{ bus.availableSeats }} seats left
+              </small>
+            </div>
+            <button (click)="openBookingModal(bus, travelDate)" data-bs-toggle="modal" data-bs-target="#seatModal" class="btn btn-outline-primary px-4 fw-bold rounded-pill" [disabled]="bus.availableSeats === 0">
+              {{ bus.availableSeats === 0 ? 'Sold Out' : 'Select Seats' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="hasSearched && returnDate">
+    <h5 class="fw-bold text-info mb-3"><i class="bi bi-arrow-left-circle-fill me-2"></i>Return: {{ toCity }} to {{ fromCity }}</h5>
+    
+    <div *ngIf="returnBuses.length === 0" class="alert alert-light border text-center text-muted">
+      No return buses found on {{ returnDate }}.
+    </div>
+
+    <div *ngFor="let bus of returnBuses" class="card mb-3 shadow-sm border-0 bus-card" style="border-radius: 10px;">
+      <div class="card-body p-4">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <h5 class="fw-bold mb-1">{{ bus.busName }}</h5> 
+            <span class="badge bg-light text-info border">Return Trip</span>
+          </div>
+          
+          <div class="col-md-4 text-center">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div class="fw-bold h5 mb-0">{{ bus.departureTime }}</div>
+                <small class="text-muted">Departure</small>
+              </div>
+              <div class="flex-grow-1 border-top mx-3 border-secondary" style="border-style: dashed !important;"></div>
+              <div>
+                <div class="fw-bold h5 mb-0">{{ bus.arrivalTime }}</div>
+                <small class="text-muted">Arrival</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5 text-end">
+            <div class="d-inline-block me-4 text-center">
+              <div class="h4 fw-bold text-success mb-0">₹{{ bus.fare }}</div>
+              <small class="text-muted fw-bold" [ngClass]="{'text-danger': bus.availableSeats <= 5, 'text-success': bus.availableSeats > 5}">
+                {{ bus.availableSeats }} seats left
+              </small>
+            </div>
+            <button (click)="openBookingModal(bus, returnDate)" data-bs-toggle="modal" data-bs-target="#seatModal" class="btn btn-outline-info px-4 fw-bold rounded-pill" [disabled]="bus.availableSeats === 0">
+              {{ bus.availableSeats === 0 ? 'Sold Out' : 'Select Seats' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal fade" id="seatModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+  <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content border-0 shadow-lg" style="background-color: #f8f9fa;">
+      
+      <div class="modal-header text-white" style="background-color: var(--primary-blue, #0d6efd);">
+        <h5 class="modal-title fw-bold"><i class="bi bi-ui-checks-grid me-2"></i> Pick Your Seats</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" (click)="closeBookingModal()"></button>
+      </div>
+      
+      <div class="modal-body p-0">
+        <app-booking *ngIf="selectedBusForModal"></app-booking>
+      </div>
+
+    </div>
+  </div>
+</div>

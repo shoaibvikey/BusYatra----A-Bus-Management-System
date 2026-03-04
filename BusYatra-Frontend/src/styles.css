@@ -1,0 +1,14 @@
+/* You can add global styles to this file, and also import other style files */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+/* Global Blue and White Theme Variables */
+:root {
+    --primary-blue: #0056b3;
+    --secondary-blue: #007bff;
+    --light-bg: #f8f9fa;
+    --white: #ffffff;
+}
+
+body {
+    background-color: var(--light-bg);
+}

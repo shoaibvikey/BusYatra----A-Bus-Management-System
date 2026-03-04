@@ -1,0 +1,64 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm sticky-top py-3" style="z-index: 1050;">
+  <div class="container">
+    <a class="navbar-brand fw-bold d-flex align-items-center" routerLink="/">
+      BusYatra 🚌 
+    </a>
+    
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+        
+        <ng-container *ngIf="!isAdmin">
+          <li class="nav-item ms-3">
+            <a class="nav-link text-white" routerLink="/">Home</a>
+          </li>
+          <li class="nav-item ms-3">
+            <a class="nav-link text-white" routerLink="/search">Search</a>
+          </li>
+          <ng-container *ngIf="!isLoggedIn">
+            <li class="nav-item">
+              <a routerLink="/cancel-ticket" class="nav-link text-white">Guest</a>
+            </li>
+          </ng-container>
+        </ng-container>
+
+        <ng-container *ngIf="isLoggedIn && isAdmin">
+          <li class="nav-item ms-3">
+            <a class="nav-link text-white" style="cursor: pointer;" routerLink="/admin" fragment="reservations">Reservations</a>
+          </li>
+          <li class="nav-item ms-3">
+            <a class="nav-link text-white" style="cursor: pointer;" routerLink="/admin" fragment="buses">Buses</a>
+          </li>
+          <li class="nav-item ms-3">
+            <a class="nav-link text-white" style="cursor: pointer;" routerLink="/admin" fragment="feedback">Feedback</a>
+          </li>
+        </ng-container>
+
+        <li class="nav-item ms-3" *ngIf="isLoggedIn && !isAdmin">
+          <a class="nav-link text-white" routerLink="/dashboard">Dashboard</a>
+        </li>
+
+        <li class="nav-item ms-3" *ngIf="!isLoggedIn">
+          <a class="btn btn-light px-4 text-primary fw-bold" routerLink="/login">Login</a>
+        </li>
+
+        <li class="nav-item d-flex align-items-center ms-4" *ngIf="isLoggedIn">
+          <div class="d-flex align-items-center me-4">
+            <span class="text-white">{{ userFullName }}</span>
+            <span *ngIf="isAdmin" class="badge rounded-circle bg-warning text-dark ms-2 d-flex justify-content-center align-items-center fw-bold shadow-sm" style="width: 22px; height: 22px; font-size: 0.75rem;" title="Admin Account">
+              A
+            </span>
+          </div>
+
+          <button class="btn btn-outline-light btn-sm fw-bold px-3 logout-btn" (click)="logout()">Logout</button>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<router-outlet></router-outlet>

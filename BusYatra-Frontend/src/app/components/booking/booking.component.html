@@ -1,0 +1,118 @@
+<div class="container py-5">
+  <div class="row">
+    <div class="col-md-7 mb-4">
+      <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 pt-4 pb-0">
+          <h4 class="fw-bold" style="color: var(--primary-blue);">Select Your Seats</h4>
+          <p class="text-muted" *ngIf="selectedBus">
+            {{ selectedBus.busName }} | {{ selectedBus.source }} to {{ selectedBus.destination }}
+          </p>
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-content-center mb-4 gap-4">
+            <div class="d-flex align-items-center"><div class="seat-legend border bg-white me-2" style="width:20px; height:20px; border-radius:4px;"></div> Available</div>
+            <div class="d-flex align-items-center"><div class="seat-legend bg-primary me-2" style="width:20px; height:20px; border-radius:4px;"></div> Selected</div>
+            <div class="d-flex align-items-center"><div class="seat-legend bg-secondary opacity-50 me-2" style="width:20px; height:20px; border-radius:4px;"></div> Booked</div>
+          </div>
+
+          <div class="bus-layout border rounded p-4 bg-light mx-auto" style="max-width: 300px;">
+            <div class="row g-3">
+              <div class="col-3" *ngFor="let seat of seats">
+                <div 
+                  class="seat text-center rounded py-2 fw-bold"
+                  style="cursor: pointer;"
+                  [ngClass]="{
+                    'bg-white border': seat.status === 'available',
+                    'bg-primary text-white': seat.status === 'selected',
+                    'bg-secondary text-white opacity-50': seat.status === 'booked'
+                  }"
+                  (click)="toggleSeat(seat)"
+                >
+                  {{ seat.number }}
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-5">
+      <div class="card shadow border-0" style="position: sticky; top: 20px;">
+        <div class="card-body p-4">
+          <h5 class="fw-bold mb-4 border-bottom pb-2">Booking Summary</h5>
+          
+          <div class="mb-3 d-flex justify-content-between">
+            <span class="text-muted">Selected Seats:</span>
+            <span class="fw-bold">{{ selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None' }}</span>
+          </div>
+
+          <div class="mb-3 d-flex justify-content-between" *ngIf="selectedBus">
+            <span class="text-muted">Base Fare:</span>
+            <span class="fw-bold">₹{{ selectedBus.fare }}</span>
+          </div>
+
+          <hr>
+
+          <div *ngIf="loggedInUser" class="bg-light p-3 rounded border mb-3">
+            <h6 class="fw-bold text-primary mb-2"><i class="bi bi-star-fill me-2 text-warning"></i>Coach Bus Details</h6>
+            <p class="small text-muted mb-3"><strong>Included Facilities:</strong> {{ coachFacilities.join(', ') }}</p>
+
+            <label class="form-label small fw-bold text-muted mb-2">Driver Option</label>
+            <div class="form-check mb-2">
+              <input class="form-check-input" type="radio" name="driverOption" [(ngModel)]="withDriver" [value]="true" (change)="onDriverOptionChange()">
+              <label class="form-check-label small">With Driver (Included)</label>
+            </div>
+            <div class="form-check">
+              <input class="form-check-input" type="radio" name="driverOption" [(ngModel)]="withDriver" [value]="false" (change)="onDriverOptionChange()">
+              <label class="form-check-label small">Without Driver (+ ₹5000 Deposit)</label>
+            </div>
+          </div>
+
+          <div *ngIf="!loggedInUser" class="bg-light p-3 rounded border mb-3">
+            <div class="text-center mb-3">
+              <h6 class="fw-bold text-dark mb-2">Have an account?</h6>
+              <button class="btn btn-outline-primary btn-sm w-100 fw-bold" (click)="goToLogin()">Log In / Sign Up</button>
+            </div>
+            
+            <div class="d-flex align-items-center my-3">
+              <hr class="flex-grow-1 border-secondary opacity-25">
+              <span class="mx-2 text-muted small fw-bold" style="font-size: 0.75rem;">OR CONTINUE AS GUEST</span>
+              <hr class="flex-grow-1 border-secondary opacity-25">
+            </div>
+
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted mb-1">Full Name</label>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="guestName" placeholder="Passenger Name">
+            </div>
+            
+            <div class="mb-2">
+              <label class="form-label small fw-bold text-muted mb-1">Email Address</label>
+              <input type="email" class="form-control form-control-sm" [(ngModel)]="guestEmail" placeholder="To receive E-Ticket">
+            </div>
+            
+            <div>
+              <label class="form-label small fw-bold text-muted mb-1">Phone Number</label>
+              <input type="text" class="form-control form-control-sm" [(ngModel)]="guestPhone" placeholder="Contact Number">
+            </div>
+          </div>
+
+          <div class="mb-2 d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold mb-0">Total Amount:</h5>
+            <h4 class="fw-bold text-success mb-0">₹{{ totalFare }}</h4>
+          </div>
+          
+          <p class="text-end small text-muted mb-4" *ngIf="securityDeposit > 0">Includes ₹5000 refundable deposit</p>
+
+          <button class="btn w-100 py-2 fw-bold text-white" 
+                  style="background-color: var(--primary-blue);"
+                  (click)="confirmBooking()"
+                  [disabled]="selectedSeats.length === 0">
+            Confirm Booking
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

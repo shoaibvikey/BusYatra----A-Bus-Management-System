@@ -1,0 +1,170 @@
+/* --- HERO SECTION --- */
+/* --- HERO SECTION --- */
+.hero-wrapper {
+  /* FIX: Changed 135deg to 180deg for a seamless top-to-bottom blend */
+  background: linear-gradient(180deg, #0d6efd 0%, #002e75 100%);
+  min-height: 600px;
+  overflow: hidden;
+  border-bottom-left-radius: 60px;
+  border-bottom-right-radius: 60px;
+  box-shadow: 0 20px 40px rgba(13, 110, 253, 0.15);
+  margin-bottom: 80px; 
+  /* FIX: Pulls the hero up slightly to swallow the navbar's bottom shadow */
+  margin-top: -5px; 
+  padding-top: 5px;
+}
+.text-shadow {
+  text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+.hero-btn {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  border: 2px solid transparent;
+}
+.hero-btn:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 25px rgba(0,0,0,0.3) !important;
+  border-color: rgba(255,255,255,0.5);
+}
+
+/* Decorative background blurbs for Hero */
+.hero-shape {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.05);
+  z-index: 1;
+}
+.shape-1 {
+  width: 400px;
+  height: 400px;
+  top: -100px;
+  left: -100px;
+}
+.shape-2 {
+  width: 300px;
+  height: 300px;
+  bottom: -50px;
+  right: -50px;
+}
+
+/* --- HOW IT WORKS (Process Cards) --- */
+.process-section {
+  margin-top: -60px; /* Pulls it up into the hero margin */
+}
+
+.process-card {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  transition: all 0.3s ease;
+  position: relative;
+  margin-top: 40px; /* Space for the overlapping icon */
+}
+.process-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+/* Overlapping Circular Icon */
+.process-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  margin: -80px auto 0; /* Pulls icon exactly halfway out of the card */
+  border: 6px solid #f8f9fa; /* Matches page background so it looks cut out */
+  transition: all 0.3s ease;
+}
+.process-card:hover .process-icon {
+  transform: scale(1.1) rotate(5deg);
+}
+
+/* --- TECH STACK SECTION --- */
+.tech-bullet {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+}
+
+.tech-card {
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  cursor: default;
+}
+.tech-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.1) !important;
+}
+
+/* --- FOOTER --- */
+.footer-dark {
+  background-color: #0b1120; /* Deep premium navy/black */
+}
+
+.footer-link {
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+  position: relative;
+}
+.footer-link:hover {
+  color: #fff;
+}
+/* Tiny underline effect on hover */
+.footer-link::after {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: #0d6efd;
+  transition: width 0.3s ease;
+}
+.footer-link:hover::after {
+  width: 100%;
+}
+
+.heart-beat {
+  display: inline-block;
+  animation: heartbeat 1.5s infinite;
+}
+
+/* --- UTILITIES & ANIMATIONS --- */
+.tracking-wide {
+  letter-spacing: 2px;
+}
+.z-index-2 {
+  z-index: 2;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes heartbeat {
+  0% { transform: scale(1); }
+  15% { transform: scale(1.2); }
+  30% { transform: scale(1); }
+  45% { transform: scale(1.2); }
+  60% { transform: scale(1); }
+}
+
+.animate-slide-up { animation: slideUp 0.8s ease forwards; }
+.animate-slide-up-delay { opacity: 0; animation: slideUp 0.8s ease 0.2s forwards; }
+.animate-slide-up-delay-2 { opacity: 0; animation: slideUp 0.8s ease 0.4s forwards; }
+.animate-fade-in { animation: fadeIn 1s ease forwards; }

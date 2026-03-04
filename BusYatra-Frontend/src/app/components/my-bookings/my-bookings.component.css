@@ -1,0 +1,24 @@
+@media print {
+  /* Hide EVERYTHING on the page */
+  body * {
+    visibility: hidden;
+  }
+  
+  /* Make ONLY the ticket printable */
+  #printableTicket, #printableTicket * {
+    visibility: visible;
+  }
+  
+  /* Hide the buttons from the print view */
+  .hide-on-print {
+    display: none !important;
+  }
+
+  /* Move the ticket to the top left of the print paper */
+  #printableTicket {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}
