@@ -20,7 +20,7 @@ import com.coforge.training.busreservationsystem.service.BookingService;
 
 @RestController
 @RequestMapping("/api/bookings")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class BookingController {
 
     @Autowired

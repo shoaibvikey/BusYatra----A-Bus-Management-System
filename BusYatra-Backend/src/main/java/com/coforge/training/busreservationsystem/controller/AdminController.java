@@ -14,7 +14,7 @@ import com.coforge.training.busreservationsystem.repository.UserRepository;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "*")
 public class AdminController {
 
     @Autowired

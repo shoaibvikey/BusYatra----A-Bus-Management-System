@@ -1,0 +1,96 @@
+!SESSION 2026-03-05 16:23:50.478 -----------------------------------------------
+eclipse.buildId=4.38.0.20251204-0849
+java.version=21.0.10
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_IN
+Framework arguments:  -product org.eclipse.epp.package.jee.product -keyring /Users/shoaibakhtar/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.epp.package.jee.product -keyring /Users/shoaibakhtar/.eclipse_keyring -data /Users/shoaibakhtar/Desktop/BusYatra/BusYatra-Backend
+
+!ENTRY ch.qos.logback.classic 1 0 2026-03-05 16:23:54.358
+!MESSAGE Activated before the state location was initialized. Retry after the state location is initialized.
+
+!ENTRY ch.qos.logback.classic 1 0 2026-03-05 16:23:57.115
+!MESSAGE Logback config file: /Users/shoaibakhtar/Desktop/BusYatra/BusYatra-Backend/.metadata/.plugins/org.eclipse.m2e.logback/logback.2.7.101.20251017-1242.xml
+
+!ENTRY org.eclipse.ui 2 0 2026-03-05 16:23:58.004
+!MESSAGE Warnings while parsing the commands from the 'org.eclipse.ui.commands' and 'org.eclipse.ui.actionDefinitions' extension points.
+!SUBENTRY 1 org.eclipse.ui 2 0 2026-03-05 16:23:58.004
+!MESSAGE Commands should really have a category: plug-in='org.springframework.tooling.boot.ls', id='spring.initializr.addStarters', categoryId='org.eclipse.lsp4e.commandCategory'
+
+!ENTRY org.eclipse.ui 2 0 2026-03-05 16:23:59.021
+!MESSAGE Warnings while parsing the commands from the 'org.eclipse.ui.commands' and 'org.eclipse.ui.actionDefinitions' extension points.
+!SUBENTRY 1 org.eclipse.ui 2 0 2026-03-05 16:23:59.021
+!MESSAGE Commands should really have a category: plug-in='org.springframework.tooling.boot.ls', id='spring.initializr.addStarters', categoryId='org.eclipse.lsp4e.commandCategory'
+!SESSION 2026-03-05 16:25:08.034 -----------------------------------------------
+eclipse.buildId=4.38.0.20251204-0849
+java.version=21.0.10
+java.vendor=Eclipse Adoptium
+BootLoader constants: OS=macosx, ARCH=x86_64, WS=cocoa, NL=en_IN
+Framework arguments:  -product org.eclipse.epp.package.jee.product -keyring /Users/shoaibakhtar/.eclipse_keyring
+Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.epp.package.jee.product -keyring /Users/shoaibakhtar/.eclipse_keyring
+
+!ENTRY ch.qos.logback.classic 1 0 2026-03-05 16:25:11.861
+!MESSAGE Activated before the state location was initialized. Retry after the state location is initialized.
+
+!ENTRY ch.qos.logback.classic 1 0 2026-03-05 16:25:14.328
+!MESSAGE Logback config file: /Users/shoaibakhtar/Desktop/BusYatra/BusYatra-Backend/.metadata/.plugins/org.eclipse.m2e.logback/logback.2.7.101.20251017-1242.xml
+
+!ENTRY org.eclipse.ui 2 0 2026-03-05 16:25:15.331
+!MESSAGE Warnings while parsing the commands from the 'org.eclipse.ui.commands' and 'org.eclipse.ui.actionDefinitions' extension points.
+!SUBENTRY 1 org.eclipse.ui 2 0 2026-03-05 16:25:15.331
+!MESSAGE Commands should really have a category: plug-in='org.springframework.tooling.boot.ls', id='spring.initializr.addStarters', categoryId='org.eclipse.lsp4e.commandCategory'
+
+!ENTRY org.eclipse.ui 2 0 2026-03-05 16:25:16.028
+!MESSAGE Warnings while parsing the commands from the 'org.eclipse.ui.commands' and 'org.eclipse.ui.actionDefinitions' extension points.
+!SUBENTRY 1 org.eclipse.ui 2 0 2026-03-05 16:25:16.028
+!MESSAGE Commands should really have a category: plug-in='org.springframework.tooling.boot.ls', id='spring.initializr.addStarters', categoryId='org.eclipse.lsp4e.commandCategory'
+
+!ENTRY org.eclipse.oomph.setup.ui 2 0 2026-03-05 16:25:36.348
+!MESSAGE Attempt to access stopped agent: org.eclipse.equinox.internal.p2.core.ProvisioningAgent@79b86132
+!STACK 0
+java.lang.IllegalStateException: Attempt to access stopped agent: org.eclipse.equinox.internal.p2.core.ProvisioningAgent@79b86132
+	at org.eclipse.equinox.internal.p2.core.ProvisioningAgent.checkRunning(ProvisioningAgent.java:93)
+	at org.eclipse.equinox.internal.p2.core.ProvisioningAgent.getService(ProvisioningAgent.java:53)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.ignoreExistingProfile(SimpleProfileRegistry.java:336)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.internalGetProfile(SimpleProfileRegistry.java:287)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.getProfile(SimpleProfileRegistry.java:204)
+	at org.eclipse.oomph.p2.internal.core.AgentImpl.getCurrentProfile(AgentImpl.java:411)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.gatherApplicableAnnotations(SetupUIPlugin.java:536)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.handleProblemAnnotations(SetupUIPlugin.java:486)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.handleBrandingNotificationURI(SetupUIPlugin.java:353)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.performStartup(SetupUIPlugin.java:1038)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin$1$1.run(SetupUIPlugin.java:279)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.oomph.setup.ui 2 0 2026-03-05 16:25:36.352
+!MESSAGE Attempt to access stopped agent: org.eclipse.equinox.internal.p2.core.ProvisioningAgent@79b86132
+!STACK 0
+java.lang.IllegalStateException: Attempt to access stopped agent: org.eclipse.equinox.internal.p2.core.ProvisioningAgent@79b86132
+	at org.eclipse.equinox.internal.p2.core.ProvisioningAgent.checkRunning(ProvisioningAgent.java:93)
+	at org.eclipse.equinox.internal.p2.core.ProvisioningAgent.getService(ProvisioningAgent.java:53)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.ignoreExistingProfile(SimpleProfileRegistry.java:336)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.internalGetProfile(SimpleProfileRegistry.java:287)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.getProfile(SimpleProfileRegistry.java:204)
+	at org.eclipse.oomph.p2.internal.core.AgentImpl.getCurrentProfile(AgentImpl.java:411)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.gatherApplicableAnnotations(SetupUIPlugin.java:536)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.handleNotificationAnnotations(SetupUIPlugin.java:499)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.handleBrandingNotificationURI(SetupUIPlugin.java:362)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.performStartup(SetupUIPlugin.java:1038)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin$1$1.run(SetupUIPlugin.java:279)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)
+
+!ENTRY org.eclipse.oomph.setup.ui 4 0 2026-03-05 16:25:36.357
+!MESSAGE Attempt to access stopped agent: org.eclipse.equinox.internal.p2.core.ProvisioningAgent@79b86132
+!STACK 0
+java.lang.IllegalStateException: Attempt to access stopped agent: org.eclipse.equinox.internal.p2.core.ProvisioningAgent@79b86132
+	at org.eclipse.equinox.internal.p2.core.ProvisioningAgent.checkRunning(ProvisioningAgent.java:93)
+	at org.eclipse.equinox.internal.p2.core.ProvisioningAgent.getService(ProvisioningAgent.java:53)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.ignoreExistingProfile(SimpleProfileRegistry.java:336)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.internalGetProfile(SimpleProfileRegistry.java:287)
+	at org.eclipse.equinox.internal.p2.engine.SimpleProfileRegistry.getProfile(SimpleProfileRegistry.java:204)
+	at org.eclipse.oomph.p2.internal.core.AgentImpl.getCurrentProfile(AgentImpl.java:411)
+	at org.eclipse.oomph.setup.p2.impl.P2TaskImpl.isNeeded(P2TaskImpl.java:688)
+	at org.eclipse.oomph.setup.internal.core.SetupTaskPerformer.initNeededSetupTasks(SetupTaskPerformer.java:2297)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin.performStartup(SetupUIPlugin.java:1053)
+	at org.eclipse.oomph.setup.ui.SetupUIPlugin$1$1.run(SetupUIPlugin.java:279)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:63)

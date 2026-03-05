@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.RequestMethod;
 @RestController
 @RequestMapping("/api/buses")
-@CrossOrigin(origins = "http://localhost:4200", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})// Allows your Angular frontend to communicate with this backend
+@CrossOrigin(origins = "*", methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS})// Allows your Angular frontend to communicate with this backend
 public class BusController {
 
     @Autowired

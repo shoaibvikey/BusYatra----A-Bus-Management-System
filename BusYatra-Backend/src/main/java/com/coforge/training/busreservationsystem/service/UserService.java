@@ -20,8 +20,8 @@ public class UserService {
         // Save the user to the database
         return userRepository.save(user);
     }
-    
- // Add this to your UserService class
+
+    // Add this to your UserService class
     public User loginUser(String email, String password) {
         User user = userRepository.findByEmailAndPassword(email, password);
         if (user == null) {
@@ -29,16 +29,16 @@ public class UserService {
         }
         return user;
     }
-    
+
     public User addMoneyToWallet(Long userId, Double amount) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
         user.setWalletBalance(user.getWalletBalance() + amount);
         return userRepository.save(user);
     }
-    
- // To update address, gender, and contact info 
+
+    // To update address, gender, and contact info
     public User updateUserProfile(Long userId, User updatedDetails) {
         User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
         user.setAddress(updatedDetails.getAddress());
