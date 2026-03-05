@@ -7,8 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class UserService {
   // --- BASE URLS ---
-  private apiUrl = 'http://localhost:8080/api/users';
-  private adminUrl = 'http://localhost:8080/api/admin'; // <-- This was the missing piece!
+  private apiUrl = 'https://busyatra-a-bus-management-system.onrender.com/api/users';
+  private adminUrl = 'https://busyatra-a-bus-management-system.onrender.com/api/admin'; // <-- This was the missing piece!
   private http = inject(HttpClient);
 
   // --- AUTH METHODS ---

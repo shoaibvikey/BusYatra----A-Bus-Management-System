@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class BookingService {
-  private apiUrl = 'http://localhost:8080/api/bookings';
+  private apiUrl = 'https://busyatra-a-bus-management-system.onrender.com/api/users';
 
   constructor(private http: HttpClient) { }
 
