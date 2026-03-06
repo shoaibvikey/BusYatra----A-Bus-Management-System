@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class FeedbackService {
-  private apiUrl = 'https://busyatra-a-bus-management-system.onrender.com/api/users';
+  private apiUrl = 'https://busyatra-a-bus-management-system.onrender.com/api/feedback';
   private http = inject(HttpClient);
 
   // Submit new feedback (For Contact Us & Booking pages)
