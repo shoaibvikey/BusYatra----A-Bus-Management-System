@@ -1,153 +1,167 @@
 <div class="container py-5">
   
-  <div class="row mb-5">
-    <div class="col-md-3 mb-3">
-      <div class="card bg-success text-white shadow-sm border-0 h-100 p-4 text-center rounded-3 d-flex flex-column justify-content-center">
-        <h6 class="text-uppercase mb-2 opacity-75 fw-bold" style="font-size: 0.8rem;">Last Month's Profits</h6>
-        <h3 class="fw-bold mb-0">₹{{ lastMonthProfit }}</h3>
-        <small class="mt-2" style="font-size: 0.75rem;">Total All-Time: ₹{{ totalProfit }}</small>
+  <div *ngIf="isInitialLoading" class="text-center py-5">
+    <div class="spinner-grow text-primary" style="width: 4rem; height: 4rem;" role="status"></div>
+    <h3 class="mt-4 fw-bold text-primary">Initializing Admin Dashboard...</h3>
+    <p class="text-muted">Loading analytics and reservations from the database.</p>
+  </div>
+
+  <div *ngIf="!isInitialLoading">
+    <div class="row mb-5">
+      <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white shadow-sm border-0 h-100 p-4 text-center rounded-3 d-flex flex-column justify-content-center">
+          <h6 class="text-uppercase mb-2 opacity-75 fw-bold" style="font-size: 0.8rem;">Last Month's Profits</h6>
+          <h3 class="fw-bold mb-0">₹{{ lastMonthProfit }}</h3>
+          <small class="mt-2" style="font-size: 0.75rem;">Total All-Time: ₹{{ totalProfit }}</small>
+        </div>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white shadow-sm border-0 h-100 p-4 text-center rounded-3 d-flex flex-column justify-content-center">
+          <h6 class="text-uppercase mb-2 opacity-75 fw-bold" style="font-size: 0.8rem;">Most Frequent Route</h6>
+          <h5 class="fw-bold mt-2 mb-0">{{ frequentRoute }}</h5> 
+        </div>
+      </div>
+
+      <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white shadow-sm border-0 h-100 p-4 text-center rounded-3 d-flex flex-column justify-content-center">
+          <h6 class="text-uppercase mb-2 opacity-75 fw-bold" style="font-size: 0.8rem;">Preferred Bus Type</h6>
+          <h4 class="fw-bold mt-2 mb-0">{{ preferredBus }}</h4> 
+        </div>
+      </div>
+      
+      <div class="col-md-3 mb-3">
+        <div class="card shadow-sm border-0 p-3 h-100">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h6 class="fw-bold text-danger mb-0" style="font-size: 0.85rem;">Inactive Users</h6>
+            <button class="btn btn-sm btn-outline-danger" style="font-size: 0.7rem;" data-bs-toggle="modal" data-bs-target="#allInactiveUsersModal" *ngIf="inactiveUsers.length > 3">
+              View All
+            </button>
+          </div>
+          <div style="max-height: 100px; overflow-y: hidden;">
+            <table class="table table-sm table-hover mb-0">
+              <thead class="table-light"><tr><th style="font-size: 0.75rem;">Name</th><th style="font-size: 0.75rem;">Contact</th></tr></thead>
+              <tbody>
+                <tr *ngFor="let user of inactiveUsers | slice:0:3">
+                  <td class="fw-bold" style="font-size: 0.75rem;">{{ user.firstName }}</td>
+                  <td style="font-size: 0.75rem;">{{ user.contactNo }}</td>
+                </tr>
+                <tr *ngIf="inactiveUsers.length === 0"><td colspan="2" class="text-center text-muted py-2 small">All users active!</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
 
-    <div class="col-md-3 mb-3">
-      <div class="card bg-info text-white shadow-sm border-0 h-100 p-4 text-center rounded-3 d-flex flex-column justify-content-center">
-        <h6 class="text-uppercase mb-2 opacity-75 fw-bold" style="font-size: 0.8rem;">Most Frequent Route</h6>
-        <h5 class="fw-bold mt-2 mb-0">{{ frequentRoute }}</h5> 
+    <hr class="mb-5">
+
+    <div id="reservations" class="d-flex justify-content-between align-items-center mb-4 pt-3">
+      <h3 class="fw-bold" style="color: var(--primary-blue, #003366);">Manage Customer Reservations</h3>
+      <div class="d-flex align-items-center">
+        <select class="form-select shadow-sm fw-bold me-3" style="width: auto; cursor: pointer;" [(ngModel)]="timeFilter" (change)="applyTimeFilter()">
+          <option value="ALL">All-Time Report</option>
+          <option value="DAILY">Daily Report (Today)</option>
+          <option value="WEEKLY">Weekly Report</option>
+          <option value="MONTHLY">Monthly Report</option>
+        </select>
+        <button class="btn btn-outline-primary shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#allReservationsModal" *ngIf="filteredBookings.length > 6">
+          View All ({{ filteredBookings.length }})
+        </button>
       </div>
     </div>
 
-    <div class="col-md-3 mb-3">
-      <div class="card bg-primary text-white shadow-sm border-0 h-100 p-4 text-center rounded-3 d-flex flex-column justify-content-center">
-        <h6 class="text-uppercase mb-2 opacity-75 fw-bold" style="font-size: 0.8rem;">Preferred Bus Type</h6>
-        <h4 class="fw-bold mt-2 mb-0">{{ preferredBus }}</h4> 
+    <div class="card shadow-sm border-0 mb-5">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="text-white" style="background-color: #343a40;">
+            <tr><th>Booking ID</th><th>Customer Name</th><th>Bus Booked</th><th>Journey Date</th><th>Status</th><th>Action</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let b of filteredBookings | slice:0:6">
+              <td class="fw-bold">#{{ b.id }}</td>
+              <td>{{ b.user?.firstName }} {{ b.user?.lastName }}</td>
+              <td>{{ b.bus?.busName }}</td>
+              <td>{{ b.journeyDate }}</td>
+              <td><span class="badge" [ngClass]="b.status === 'BOOKED' ? 'bg-success' : 'bg-danger'">{{ b.status }}</span></td>
+              <td><button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#updateStatusModal" (click)="openUpdateStatusModal(b)">Update</button></td>
+            </tr>
+            <tr *ngIf="filteredBookings.length === 0">
+              <td colspan="6" class="text-center py-4 text-muted">No reservations found.</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+    </div>
+
+    <hr class="mb-5">
+    
+    <div id="buses" class="d-flex justify-content-between align-items-center mb-4 pt-3">
+      <h3 class="fw-bold" style="color: var(--primary-blue, #003366);">Bus Fleet Management</h3>
+      <div>
+        <button class="btn btn-outline-primary shadow-sm fw-bold me-2" data-bs-toggle="modal" data-bs-target="#allBusesModal" *ngIf="buses.length > 6">
+          View All ({{ buses.length }})
+        </button>
+        <button class="btn btn-primary shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#addBusModal" (click)="openAddModal()">+ Add New Bus</button>
+      </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="text-white" style="background-color: #343a40;">
+            <tr><th>ID</th><th>Bus Name</th><th>Driver</th><th>Source</th><th>Destination</th><th>Timings</th><th>Fare</th><th>Actions</th></tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bus of buses | slice:0:6">
+              <td class="fw-bold">{{ bus.id }}</td>
+              <td>{{ bus.busName }}</td>
+              <td class="text-muted"><small>{{ bus.driverName || 'Not Assigned' }}<br>{{ bus.driverContact }}</small></td>
+              <td>{{ bus.source }}</td>
+              <td>{{ bus.destination }}</td>
+              <td>{{ bus.departureTime }} - {{ bus.arrivalTime }}</td>
+              <td class="text-success fw-bold">₹{{ bus.fare }}</td>
+              <td>
+                <button class="btn btn-sm btn-outline-warning me-2" data-bs-toggle="modal" data-bs-target="#addBusModal" (click)="onEditBus(bus)">Edit</button>
+                <button class="btn btn-sm btn-outline-danger" (click)="onDeleteBus(bus.id)">Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="buses.length === 0">
+              <td colspan="8" class="text-center py-4 text-muted">No buses found.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <hr class="my-5">
+
+    <div id="feedback" class="d-flex justify-content-between align-items-center mb-4 pt-3">
+      <h3 class="fw-bold mb-0" style="color: #003366;">Customer Feedback</h3>
+      <button class="btn btn-outline-primary shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#allFeedbackModal" *ngIf="allFeedback.length > 6">
+        View All ({{ allFeedback.length }})
+      </button>
     </div>
     
-    <div class="col-md-3 mb-3">
-      <div class="card shadow-sm border-0 p-3 h-100">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <h6 class="fw-bold text-danger mb-0" style="font-size: 0.85rem;">Inactive Users</h6>
-          <button class="btn btn-sm btn-outline-danger" style="font-size: 0.7rem;" data-bs-toggle="modal" data-bs-target="#allInactiveUsersModal" *ngIf="inactiveUsers.length > 3">
-            View All
-          </button>
-        </div>
-        <div style="max-height: 100px; overflow-y: hidden;">
-          <table class="table table-sm table-hover mb-0">
-            <thead class="table-light"><tr><th style="font-size: 0.75rem;">Name</th><th style="font-size: 0.75rem;">Contact</th></tr></thead>
-            <tbody>
-              <tr *ngFor="let user of inactiveUsers | slice:0:3">
-                <td class="fw-bold" style="font-size: 0.75rem;">{{ user.firstName }}</td>
-                <td style="font-size: 0.75rem;">{{ user.contactNo }}</td>
-              </tr>
-              <tr *ngIf="inactiveUsers.length === 0"><td colspan="2" class="text-center text-muted py-2 small">All users active!</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <hr class="mb-5">
-
-  <div id="reservations" class="d-flex justify-content-between align-items-center mb-4 pt-3">
-    <h3 class="fw-bold" style="color: var(--primary-blue, #003366);">Manage Customer Reservations</h3>
-    <div class="d-flex align-items-center">
-      <select class="form-select shadow-sm fw-bold me-3" style="width: auto; cursor: pointer;" [(ngModel)]="timeFilter" (change)="applyTimeFilter()">
-        <option value="ALL">All-Time Report</option>
-        <option value="DAILY">Daily Report (Today)</option>
-        <option value="WEEKLY">Weekly Report</option>
-        <option value="MONTHLY">Monthly Report</option>
-      </select>
-      <button class="btn btn-outline-primary shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#allReservationsModal" *ngIf="filteredBookings.length > 6">
-        View All ({{ filteredBookings.length }})
-      </button>
-    </div>
-  </div>
-
-  <div class="card shadow-sm border-0 mb-5">
-    <div class="table-responsive">
-      <table class="table table-hover mb-0">
-        <thead class="text-white" style="background-color: #343a40;">
-          <tr><th>Booking ID</th><th>Customer Name</th><th>Bus Booked</th><th>Journey Date</th><th>Status</th><th>Action</th></tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let b of filteredBookings | slice:0:6">
-            <td class="fw-bold">#{{ b.id }}</td>
-            <td>{{ b.user?.firstName }} {{ b.user?.lastName }}</td>
-            <td>{{ b.bus?.busName }}</td>
-            <td>{{ b.journeyDate }}</td>
-            <td><span class="badge" [ngClass]="b.status === 'BOOKED' ? 'bg-success' : 'bg-danger'">{{ b.status }}</span></td>
-            <td><button class="btn btn-sm btn-outline-dark" data-bs-toggle="modal" data-bs-target="#updateStatusModal" (click)="openUpdateStatusModal(b)">Update</button></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <hr class="mb-5">
-  
-  <div id="buses" class="d-flex justify-content-between align-items-center mb-4 pt-3">
-    <h3 class="fw-bold" style="color: var(--primary-blue, #003366);">Bus Fleet Management</h3>
-    <div>
-      <button class="btn btn-outline-primary shadow-sm fw-bold me-2" data-bs-toggle="modal" data-bs-target="#allBusesModal" *ngIf="buses.length > 6">
-        View All ({{ buses.length }})
-      </button>
-      <button class="btn btn-primary shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#addBusModal" (click)="openAddModal()">+ Add New Bus</button>
-    </div>
-  </div>
-
-  <div class="card shadow-sm border-0">
-    <div class="table-responsive">
-      <table class="table table-hover mb-0">
-        <thead class="text-white" style="background-color: #343a40;">
-          <tr><th>ID</th><th>Bus Name</th><th>Driver</th><th>Source</th><th>Destination</th><th>Timings</th><th>Fare</th><th>Actions</th></tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let bus of buses | slice:0:6">
-            <td class="fw-bold">{{ bus.id }}</td>
-            <td>{{ bus.busName }}</td>
-            <td class="text-muted"><small>{{ bus.driverName || 'Not Assigned' }}<br>{{ bus.driverContact }}</small></td>
-            <td>{{ bus.source }}</td>
-            <td>{{ bus.destination }}</td>
-            <td>{{ bus.departureTime }} - {{ bus.arrivalTime }}</td>
-            <td class="text-success fw-bold">₹{{ bus.fare }}</td>
-            <td>
-              <button class="btn btn-sm btn-outline-warning me-2" data-bs-toggle="modal" data-bs-target="#addBusModal" (click)="onEditBus(bus)">Edit</button>
-              <button class="btn btn-sm btn-outline-danger" (click)="onDeleteBus(bus.id)">Delete</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <hr class="my-5">
-
-  <div id="feedback" class="d-flex justify-content-between align-items-center mb-4 pt-3">
-    <h3 class="fw-bold mb-0" style="color: #003366;">Customer Feedback</h3>
-    <button class="btn btn-outline-primary shadow-sm fw-bold" data-bs-toggle="modal" data-bs-target="#allFeedbackModal" *ngIf="allFeedback.length > 6">
-      View All ({{ allFeedback.length }})
-    </button>
-  </div>
-  
-  <div class="row">
-    <div class="col-md-4 mb-4" *ngFor="let f of allFeedback | slice:0:6">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body">
-          <div class="d-flex justify-content-between align-items-start mb-2">
-            <h6 class="fw-bold mb-0">{{ f.name }}</h6>
-            <span class="badge bg-warning text-dark">{{ f.rating }} ★</span>
+    <div class="row">
+      <div class="col-md-4 mb-4" *ngFor="let f of allFeedback | slice:0:6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <h6 class="fw-bold mb-0">{{ f.name }}</h6>
+              <span class="badge bg-warning text-dark">{{ f.rating }} ★</span>
+            </div>
+            <p class="text-muted small mb-2"><em>{{ f.subject }}</em></p>
+            <p class="card-text small">"{{ f.message }}"</p>
           </div>
-          <p class="text-muted small mb-2"><em>{{ f.subject }}</em></p>
-          <p class="card-text small">"{{ f.message }}"</p>
         </div>
       </div>
+      <div *ngIf="allFeedback.length === 0" class="col-12 text-center py-4 bg-light rounded">
+        <p class="text-muted mb-0">No feedback received yet.</p>
+      </div>
     </div>
-    <div *ngIf="allFeedback.length === 0" class="col-12 text-center py-4 bg-light rounded">
-      <p class="text-muted mb-0">No feedback received yet.</p>
-    </div>
-  </div>
-</div>
+
+  </div> </div>
 
 <div class="modal fade" id="addBusModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -190,7 +204,6 @@
             {{ isEditMode ? 'Updating...' : 'Saving...' }}
           </span>
         </button>
-
       </div>
     </div>
   </div>
@@ -219,7 +232,6 @@
             Updating...
           </span>
         </button>
-
       </div>
     </div>
   </div>

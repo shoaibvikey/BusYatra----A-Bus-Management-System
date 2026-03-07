@@ -21,7 +21,6 @@ export class AdminDashboardComponent implements OnInit {
   inactiveUsers: any[] = [];
   allFeedback: any[] = [];
   
-  // Variables for Time-Based Reports
   filteredBookings: any[] = [];
   timeFilter: string = 'ALL';
   lastMonthProfit: number = 0;
@@ -36,10 +35,10 @@ export class AdminDashboardComponent implements OnInit {
   newReservationStatus: string = '';
 
   // --- NEW LOADING TRACKERS ---
+  isInitialLoading: boolean = true; // Tracks full page load
   isSavingBus: boolean = false;
   isUpdatingStatus: boolean = false;
 
-  // Driver fields included as per requirements
   newBus: any = {
     busName: '', source: '', destination: '', departureTime: '', arrivalTime: '', 
     totalSeats: 24, fare: 0, driverName: '', driverContact: ''
@@ -53,45 +52,57 @@ export class AdminDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadAllBuses();
     this.loadAdminData();
+    this.loadAllBuses();
     this.loadFeedback();
   }
 
   loadAdminData() {
+    this.isInitialLoading = true;
+
+    // 1. Fetch Profits (Fallback to 0 on error)
     this.userService.getTotalProfits().subscribe({
-      next: (profit: any) => this.totalProfit = profit,
-      error: (err: any) => console.error(err)
+      next: (profit: any) => this.totalProfit = profit || 0,
+      error: (err: any) => { console.error("Profits API missing", err); this.totalProfit = 0; }
     });
 
+    // 2. Fetch Inactive Users (Fallback to empty array on error)
     this.userService.getInactiveUsers().subscribe({
-      next: (users: any) => this.inactiveUsers = users,
-      error: (err: any) => console.error(err)
+      next: (users: any) => this.inactiveUsers = users || [],
+      error: (err: any) => { console.error("Inactive Users API missing", err); this.inactiveUsers = []; }
     });
 
+    // 3. Fetch Preferred Bus (Fallback to N/A on error)
     this.userService.getPreferredBus().subscribe({
-      next: (res: any) => this.preferredBus = res.type,
-      error: (err: any) => console.error(err)
+      next: (res: any) => this.preferredBus = res?.type || 'N/A',
+      error: (err: any) => { console.error("Preferred Bus API missing", err); this.preferredBus = 'N/A'; }
     });
 
+    // 4. Fetch Frequent Route (Fallback to N/A on error)
     this.userService.getFrequentRoute().subscribe({
-      next: (res: any) => this.frequentRoute = res.route,
-      error: (err: any) => console.error(err)
+      next: (res: any) => this.frequentRoute = res?.route || 'N/A',
+      error: (err: any) => { console.error("Frequent Route API missing", err); this.frequentRoute = 'N/A'; }
     });
 
+    // 5. Fetch Bookings (This is the critical one that turns off the loader)
     this.bookingService.getAllBookings().subscribe({
       next: (res: any[]) => {
-        this.allBookings = res;
+        this.allBookings = res || [];
         this.applyTimeFilter();
         this.calculateLastMonthProfit();
+        this.isInitialLoading = false; // Turn off spinner!
       },
-      error: (err: any) => console.error('Failed to load bookings', err)
+      error: (err: any) => {
+        console.error('Failed to load bookings', err);
+        this.allBookings = [];
+        this.isInitialLoading = false; // Turn off spinner even if it fails!
+      }
     });
   }
 
   loadFeedback() {
     this.feedbackService.getAllFeedback().subscribe({
-      next: (data) => this.allFeedback = data,
+      next: (data) => this.allFeedback = data || [],
       error: (err) => console.error("Error loading feedback", err)
     });
   }
@@ -131,7 +142,7 @@ export class AdminDashboardComponent implements OnInit {
 
   loadAllBuses() {
     this.busService.getAllBuses().subscribe({
-      next: (data) => this.buses = data,
+      next: (data) => this.buses = data || [],
       error: (err) => console.error(err)
     });
   }
@@ -149,24 +160,19 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   saveBus() {
-    // 1. Turn the spinner ON
     this.isSavingBus = true;
-
     const action = this.isEditMode && this.editBusId ? 
                    this.busService.updateBus(this.editBusId, this.newBus) : 
                    this.busService.addBus(this.newBus);
 
     action.subscribe({
       next: (res) => {
-        // 2. Turn the spinner OFF and close modal
         this.isSavingBus = false;
         this.closeModal('addBusModal');
-        
         Swal.fire({ title: 'Success!', text: 'Bus fleet updated successfully.', icon: 'success', timer: 2000, showConfirmButton: false });
         this.loadAllBuses();
       },
       error: (err) => {
-        // 3. Turn the spinner OFF if there is an error
         this.isSavingBus = false;
         Swal.fire('Error!', 'Failed to save bus details.', 'error');
         console.error(err);
@@ -194,16 +200,13 @@ export class AdminDashboardComponent implements OnInit {
 
   saveReservationStatus() {
     if (this.selectedBooking && this.newReservationStatus) {
-      // 1. Turn the spinner ON
       this.isUpdatingStatus = true;
       this.selectedBooking.status = this.newReservationStatus;
 
       this.bookingService.updateBooking(this.selectedBooking.id, this.selectedBooking).subscribe({
         next: () => {
-          // 2. Turn the spinner OFF and close modal
           this.isUpdatingStatus = false;
           this.closeModal('updateStatusModal');
-
           Swal.fire({ title: 'Success!', text: 'Status updated.', icon: 'success', timer: 2000, showConfirmButton: false });
           this.loadAdminData(); 
         },
@@ -215,7 +218,6 @@ export class AdminDashboardComponent implements OnInit {
     }
   }
 
-  // Helper method to close Bootstrap modals safely from code
   private closeModal(modalId: string) {
     const modalElement = document.getElementById(modalId);
     if (modalElement) {
