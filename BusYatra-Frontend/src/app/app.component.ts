@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink, Router } from '@angular/router';
-import Swal from 'sweetalert2'; // IMPORTED SWEETALERT
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-root',
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2'; // IMPORTED SWEETALERT
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'BusYatra'; // Updated to match your Navbar branding
+  title = 'BusYatra'; 
   private router = inject(Router);
 
   get isLoggedIn(): boolean {
@@ -39,7 +39,6 @@ export class AppComponent {
     return false;
   }
 
-  // UPDATED: SweetAlert Logout Confirmation
   logout() {
     Swal.fire({
       title: 'Are you sure?',
@@ -51,11 +50,9 @@ export class AppComponent {
       confirmButtonText: 'Yes, log out!'
     }).then((result) => {
       if (result.isConfirmed) {
-        // Clear storage
         localStorage.removeItem('loggedUser');
         localStorage.removeItem('userRole');
         
-        // Show success message
         Swal.fire({
           title: 'Logged Out!',
           text: 'You have been successfully logged out.',
@@ -64,7 +61,6 @@ export class AppComponent {
           showConfirmButton: false
         });
 
-        // Redirect
         this.router.navigateByUrl('/login');
       }
     });

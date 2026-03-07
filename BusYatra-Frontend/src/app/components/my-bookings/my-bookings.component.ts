@@ -32,38 +32,47 @@ export class MyBookingsComponent implements OnInit {
   minRescheduleDate: string = '';
   maxRescheduleDate: string = '';
 
+  // --- NEW LOADING TRACKERS ---
+  isLoadingBookings: boolean = true;
+  isCancellingId: number | null = null; // Tracks WHICH button is spinning
+  isRescheduling: boolean = false;
+  isSubmittingFeedback: boolean = false;
+
   ngOnInit() {
     if (typeof window !== 'undefined' && window.localStorage) {
       const user = JSON.parse(localStorage.getItem('loggedUser') || '{}');
       if (user.id) {
         this.loadBookings(user.id);
+      } else {
+        this.isLoadingBookings = false;
       }
     }
-    this.calculateRescheduleDates(); // Initialize the 1-year window
+    this.calculateRescheduleDates(); 
   }
 
-  // Calculates the 1-Year Rescheduling Window
   calculateRescheduleDates() {
     const today = new Date();
-    
-    // Minimum date: Tomorrow (You usually can't reschedule for the exact same day)
     const min = new Date(today);
     min.setDate(min.getDate() + 1);
     this.minRescheduleDate = min.toISOString().split('T')[0];
 
-    // Maximum date: Exactly 1 year from today
     const max = new Date(today);
     max.setFullYear(max.getFullYear() + 1);
     this.maxRescheduleDate = max.toISOString().split('T')[0];
   }
 
   loadBookings(userId: number) {
+    this.isLoadingBookings = true;
     this.bookingService.getUserBookings(userId).subscribe({
       next: (data: any) => {
         this.bookings = data;
         this.applyFilters(); 
+        this.isLoadingBookings = false;
       },
-      error: (err: any) => console.error("Error loading tickets", err)
+      error: (err: any) => {
+        console.error("Error loading tickets", err);
+        this.isLoadingBookings = false;
+      }
     });
   }
 
@@ -99,12 +108,19 @@ export class MyBookingsComponent implements OnInit {
       confirmButtonText: 'Yes, cancel it!'
     }).then((result) => {
       if (result.isConfirmed) {
+        // 1. Turn spinner ON for this specific button
+        this.isCancellingId = bookingId;
+
         this.bookingService.cancelBooking(bookingId, user.id).subscribe({
           next: (msg: any) => { 
+            this.isCancellingId = null; // Turn OFF
             Swal.fire('Cancelled!', 'Your ticket has been cancelled successfully.', 'success');
             this.loadBookings(user.id);
           },
-          error: (err: any) => Swal.fire('Error', 'Cancellation failed!', 'error')
+          error: (err: any) => {
+            this.isCancellingId = null; // Turn OFF
+            Swal.fire('Error', 'Cancellation failed!', 'error');
+          }
         });
       }
     });
@@ -125,9 +141,12 @@ export class MyBookingsComponent implements OnInit {
 
   submitFeedback() {
     if (!this.feedbackData.message.trim()) {
-      setTimeout(() => Swal.fire('Wait!', 'Please write a message before submitting.', 'warning'), 300);
+      Swal.fire('Wait!', 'Please write a message before submitting.', 'warning');
       return;
     }
+
+    // 1. Turn spinner ON
+    this.isSubmittingFeedback = true;
 
     const payload = {
       name: this.selectedBookingForFeedback.user.firstName + ' ' + this.selectedBookingForFeedback.user.lastName,
@@ -142,57 +161,73 @@ export class MyBookingsComponent implements OnInit {
         this.selectedBookingForFeedback.feedbackSubmitted = true;
         this.bookingService.updateBooking(this.selectedBookingForFeedback.id, this.selectedBookingForFeedback).subscribe();
 
-        setTimeout(() => {
-          Swal.fire({
-            title: 'Thank You!',
-            text: 'Your feedback has been submitted to the admin team.',
-            icon: 'success',
-            timer: 2500,
-            showConfirmButton: false
-          });
-        }, 300);
+        // 2. Turn spinner OFF and close modal
+        this.isSubmittingFeedback = false;
+        this.closeModal('feedbackModal');
+
+        Swal.fire({
+          title: 'Thank You!',
+          text: 'Your feedback has been submitted.',
+          icon: 'success',
+          timer: 2500,
+          showConfirmButton: false
+        });
       },
       error: (err) => {
-        setTimeout(() => Swal.fire('Error', 'Could not submit feedback at this time.', 'error'), 300);
+        this.isSubmittingFeedback = false;
+        Swal.fire('Error', 'Could not submit feedback at this time.', 'error');
         console.error(err);
       }
     });
   }
 
-  // --- Reschedule Methods ---
   openRescheduleModal(booking: any) {
     this.selectedBookingForReschedule = booking;
-    this.newJourneyDate = ''; // Reset the date input
+    this.newJourneyDate = ''; 
   }
 
   submitReschedule() {
     if (!this.newJourneyDate) {
-      setTimeout(() => Swal.fire('Wait!', 'Please select a new journey date.', 'warning'), 300);
+      Swal.fire('Wait!', 'Please select a new journey date.', 'warning');
       return;
     }
 
-    // Change the journey date in the object
+    // 1. Turn spinner ON
+    this.isRescheduling = true;
+
     this.selectedBookingForReschedule.journeyDate = this.newJourneyDate;
 
-    // Send the updated booking to the database
     this.bookingService.updateBooking(this.selectedBookingForReschedule.id, this.selectedBookingForReschedule).subscribe({
       next: (res) => {
-        setTimeout(() => {
-          Swal.fire({
-            title: 'Rescheduled!',
-            text: `Your journey has been successfully rescheduled to ${this.newJourneyDate}.`,
-            icon: 'success',
-            timer: 2500,
-            showConfirmButton: false
-          });
-        }, 300);
+        // 2. Turn spinner OFF and close modal
+        this.isRescheduling = false;
+        this.closeModal('rescheduleModal');
+
+        Swal.fire({
+          title: 'Rescheduled!',
+          text: `Your journey has been successfully rescheduled to ${this.newJourneyDate}.`,
+          icon: 'success',
+          timer: 2500,
+          showConfirmButton: false
+        });
         
-        // Refresh the filter list to reflect the new date order
         this.applyFilters(); 
       },
       error: (err) => {
-        setTimeout(() => Swal.fire('Error', 'Could not reschedule ticket at this time.', 'error'), 300);
+        this.isRescheduling = false;
+        Swal.fire('Error', 'Could not reschedule ticket at this time.', 'error');
       }
     });
+  }
+
+  // Helper method to close Bootstrap modals safely
+  private closeModal(modalId: string) {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+      const closeButton = modalElement.querySelector('.btn-close') as HTMLElement;
+      if (closeButton) {
+        closeButton.click();
+      }
+    }
   }
 }

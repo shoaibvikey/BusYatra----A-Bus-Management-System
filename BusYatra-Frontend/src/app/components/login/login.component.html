@@ -17,7 +17,14 @@
             <label class="form-label fw-bold text-secondary">Password</label>
             <input type="password" name="loginPassword" [(ngModel)]="loginObj.password" class="form-control form-control-lg" placeholder="Enter password" required>
           </div>
-          <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm" style="background-color: var(--primary-blue);">Login</button>
+          
+          <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm" style="background-color: var(--primary-blue);" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Login</span>
+            <span *ngIf="isLoading">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Logging in...
+            </span>
+          </button>
         </form>
       }
       @else {
@@ -44,7 +51,14 @@
             <label class="form-label fw-bold text-secondary">Password</label>
             <input type="password" name="regPassword" [(ngModel)]="registerObj.password" class="form-control" placeholder="Create password" required>
           </div>
-          <button type="submit" class="btn btn-success w-100 btn-lg shadow-sm">Register</button>
+          
+          <button type="submit" class="btn btn-success w-100 btn-lg shadow-sm" [disabled]="isLoading">
+            <span *ngIf="!isLoading">Register</span>
+            <span *ngIf="isLoading">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Registering...
+            </span>
+          </button>
         </form>
       }
 

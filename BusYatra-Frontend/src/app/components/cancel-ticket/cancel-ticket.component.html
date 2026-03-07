@@ -26,7 +26,10 @@
 
         <button class="btn btn-primary w-100 fw-bold py-3 shadow-sm rounded-pill" (click)="findBooking()" [disabled]="isLoading">
           <span *ngIf="!isLoading">Find My Booking</span>
-          <span *ngIf="isLoading" class="spinner-border spinner-border-sm"></span>
+          <span *ngIf="isLoading">
+            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            Searching...
+          </span>
         </button>
       </div>
 
@@ -47,7 +50,11 @@
           </button>
           
           <button class="btn btn-outline-danger fw-bold py-3 rounded-pill" (click)="cancelTicket()" [disabled]="isLoading">
-            <i class="bi bi-x-circle me-2"></i> Cancel & Request Refund
+            <span *ngIf="!isLoading"><i class="bi bi-x-circle me-2"></i> Cancel & Request Refund</span>
+            <span *ngIf="isLoading">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Cancelling...
+            </span>
           </button>
         </div>
       </div>
@@ -65,7 +72,10 @@
           <button class="btn btn-light fw-bold py-3 flex-grow-1 border" (click)="currentStep = 2">Back</button>
           <button class="btn btn-success fw-bold py-3 flex-grow-1 shadow-sm" (click)="confirmReschedule()" [disabled]="isLoading">
             <span *ngIf="!isLoading">Confirm Reschedule</span>
-            <span *ngIf="isLoading" class="spinner-border spinner-border-sm"></span>
+            <span *ngIf="isLoading">
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Processing...
+            </span>
           </button>
         </div>
       </div>

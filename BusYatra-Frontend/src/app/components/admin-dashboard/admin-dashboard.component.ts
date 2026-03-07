@@ -35,6 +35,10 @@ export class AdminDashboardComponent implements OnInit {
   selectedBooking: any = null;
   newReservationStatus: string = '';
 
+  // --- NEW LOADING TRACKERS ---
+  isSavingBus: boolean = false;
+  isUpdatingStatus: boolean = false;
+
   // Driver fields included as per requirements
   newBus: any = {
     busName: '', source: '', destination: '', departureTime: '', arrivalTime: '', 
@@ -145,16 +149,25 @@ export class AdminDashboardComponent implements OnInit {
   }
 
   saveBus() {
+    // 1. Turn the spinner ON
+    this.isSavingBus = true;
+
     const action = this.isEditMode && this.editBusId ? 
                    this.busService.updateBus(this.editBusId, this.newBus) : 
                    this.busService.addBus(this.newBus);
 
     action.subscribe({
       next: (res) => {
+        // 2. Turn the spinner OFF and close modal
+        this.isSavingBus = false;
+        this.closeModal('addBusModal');
+        
         Swal.fire({ title: 'Success!', text: 'Bus fleet updated successfully.', icon: 'success', timer: 2000, showConfirmButton: false });
         this.loadAllBuses();
       },
       error: (err) => {
+        // 3. Turn the spinner OFF if there is an error
+        this.isSavingBus = false;
         Swal.fire('Error!', 'Failed to save bus details.', 'error');
         console.error(err);
       }
@@ -181,14 +194,35 @@ export class AdminDashboardComponent implements OnInit {
 
   saveReservationStatus() {
     if (this.selectedBooking && this.newReservationStatus) {
+      // 1. Turn the spinner ON
+      this.isUpdatingStatus = true;
       this.selectedBooking.status = this.newReservationStatus;
+
       this.bookingService.updateBooking(this.selectedBooking.id, this.selectedBooking).subscribe({
         next: () => {
+          // 2. Turn the spinner OFF and close modal
+          this.isUpdatingStatus = false;
+          this.closeModal('updateStatusModal');
+
           Swal.fire({ title: 'Success!', text: 'Status updated.', icon: 'success', timer: 2000, showConfirmButton: false });
           this.loadAdminData(); 
         },
-        error: (err) => Swal.fire('Error!', 'Failed to update.', 'error')
+        error: (err) => {
+          this.isUpdatingStatus = false;
+          Swal.fire('Error!', 'Failed to update.', 'error');
+        }
       });
+    }
+  }
+
+  // Helper method to close Bootstrap modals safely from code
+  private closeModal(modalId: string) {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+      const closeButton = modalElement.querySelector('.btn-close') as HTMLElement;
+      if (closeButton) {
+        closeButton.click();
+      }
     }
   }
 }

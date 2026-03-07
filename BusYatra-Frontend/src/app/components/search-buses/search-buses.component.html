@@ -45,27 +45,37 @@
       </div>
 
       <div class="col-md-12 col-lg-2 d-flex align-items-end">
-        <button (click)="onSearch()" class="btn btn-primary w-100 fw-bold shadow-sm" style="background-color: var(--primary-blue); height: 38px;">
-          SEARCH
+        <button (click)="onSearch()" class="btn btn-primary w-100 fw-bold shadow-sm" style="background-color: var(--primary-blue); height: 38px;" [disabled]="isLoading">
+          <span *ngIf="!isLoading">SEARCH</span>
+          <span *ngIf="isLoading">
+            <span class="spinner-border spinner-border-sm me-1"></span>
+            WAIT...
+          </span>
         </button>
       </div>
     </div>
   </div>
 
-  <div *ngIf="!hasSearched" class="text-center py-5 bg-white shadow-sm border-0 mt-3" style="border-radius: 15px;">
+  <div *ngIf="!hasSearched && !isLoading" class="text-center py-5 bg-white shadow-sm border-0 mt-3" style="border-radius: 15px;">
     <i class="bi bi-bus-front text-muted opacity-50" style="font-size: 5rem;"></i>
     <h4 class="fw-bold text-secondary mt-3">Search to get buses</h4>
     <p class="text-muted">Enter your route details and date above to find available journeys.</p>
   </div>
 
-  <div *ngIf="hasSearched" class="mb-5">
+  <div *ngIf="isLoading" class="text-center py-5">
+    <div class="spinner-grow text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+    <h5 class="fw-bold text-secondary mt-3">Waking up the server...</h5>
+    <p class="text-muted small">We are fetching live routes and seat availability from our cloud database.</p>
+  </div>
+
+  <div *ngIf="hasSearched && !isLoading" class="mb-5">
     <h5 class="fw-bold text-primary mb-3" *ngIf="buses.length > 0 || returnDate"><i class="bi bi-arrow-right-circle-fill me-2"></i>Outbound: {{ fromCity }} to {{ toCity }}</h5>
     
     <div *ngIf="buses.length === 0" class="alert alert-light border text-center text-muted">
       No outward buses found on {{ travelDate }}.
     </div>
 
-    <div *ngFor="let bus of buses" class="card mb-3 shadow-sm border-0 bus-card" style="border-radius: 10px;">
+    <div *for="let bus of buses" class="card mb-3 shadow-sm border-0 bus-card" style="border-radius: 10px;">
       <div class="card-body p-4">
         <div class="row align-items-center">
           <div class="col-md-3">
@@ -103,7 +113,7 @@
     </div>
   </div>
 
-  <div *ngIf="hasSearched && returnDate">
+  <div *ngIf="hasSearched && returnDate && !isLoading">
     <h5 class="fw-bold text-info mb-3"><i class="bi bi-arrow-left-circle-fill me-2"></i>Return: {{ toCity }} to {{ fromCity }}</h5>
     
     <div *ngIf="returnBuses.length === 0" class="alert alert-light border text-center text-muted">

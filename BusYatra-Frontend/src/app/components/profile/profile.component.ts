@@ -2,7 +2,7 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../services/user.service';
-import Swal from 'sweetalert2'; // IMPORTED SWEETALERT
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-profile',
@@ -12,6 +12,10 @@ import Swal from 'sweetalert2'; // IMPORTED SWEETALERT
 })
 export class ProfileComponent implements OnInit {
   user: any = {};
+  
+  // --- NEW LOADING TRACKER ---
+  isLoading: boolean = false;
+
   private userService = inject(UserService);
 
   ngOnInit() {
@@ -21,12 +25,16 @@ export class ProfileComponent implements OnInit {
   }
 
   onUpdate() {
+    // 1. Turn the spinner ON
+    this.isLoading = true;
+
     this.userService.updateProfile(this.user.id, this.user).subscribe({
       next: (res) => {
-        // Update local storage with the new user data
+        // 2. Turn the spinner OFF on success
+        this.isLoading = false;
+
         localStorage.setItem('loggedUser', JSON.stringify(res));
         
-        // Success SweetAlert
         Swal.fire({
           title: 'Profile Updated!',
           text: 'Your profile details have been successfully saved.',
@@ -36,7 +44,9 @@ export class ProfileComponent implements OnInit {
         });
       },
       error: (err) => {
-        // Error SweetAlert
+        // 3. Turn the spinner OFF on error
+        this.isLoading = false;
+
         Swal.fire({
           title: 'Update Failed',
           text: 'There was a problem updating your profile. Please try again.',

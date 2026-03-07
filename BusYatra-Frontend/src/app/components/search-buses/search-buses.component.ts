@@ -6,13 +6,11 @@ import { BusService } from '../../services/bus.service';
 import { BookingService } from '../../services/booking.service';
 import { forkJoin } from 'rxjs';
 
-// 👉 NEW: Import your BookingComponent here! (Make sure the path matches your project structure)
 import { BookingComponent } from '../booking/booking.component'; 
 
 @Component({
   selector: 'app-search-buses',
   standalone: true,
-  // 👉 NEW: Add BookingComponent to your imports array!
   imports: [CommonModule, FormsModule, RouterLink, BookingComponent],
   templateUrl: './search-buses.component.html',
   styleUrl: './search-buses.component.css'
@@ -29,7 +27,9 @@ export class SearchBusesComponent implements OnInit {
   buses: any[] = []; 
   returnBuses: any[] = []; 
 
-  // 👉 NEW: Variable to control when the modal shows the booking component
+  // --- NEW LOADING TRACKER ---
+  isLoading: boolean = false;
+
   selectedBusForModal: any = null;
 
   availableCities: string[] = [
@@ -87,6 +87,9 @@ export class SearchBusesComponent implements OnInit {
 
   onSearch() {
     if (!this.fromCity || !this.toCity || !this.travelDate) return; 
+    
+    // 1. Turn ON the loading state
+    this.isLoading = true;
     this.hasSearched = true; 
 
     // Outbound Search
@@ -94,38 +97,13 @@ export class SearchBusesComponent implements OnInit {
       next: (buses: any[]) => {
         if (buses.length === 0) {
           this.buses = [];
+          this.isLoading = false; // Turn OFF if no buses
         } else {
           const seatRequests = buses.map(bus => this.bookingService.getOccupiedSeats(bus.id, this.travelDate));
-          forkJoin(seatRequests).subscribe((allBookings: any[][]) => {
-            this.buses = buses.map((bus, index) => {
-              const busBookings = allBookings[index] || [];
-              let occupiedCount = 0;
-              busBookings.forEach((booking: any) => {
-                if (typeof booking === 'string') {
-                   occupiedCount += booking.split(',').filter(s => s.trim() !== '').length;
-                } else if (booking && booking.seatNumbers) {
-                   occupiedCount += booking.seatNumbers.split(',').filter((s: string) => s.trim() !== '').length;
-                }
-              });
-              return { ...bus, availableSeats: 24 - occupiedCount };
-            });
-          });
-        }
-      },
-      error: (err) => { console.error("Error", err); this.buses = []; }
-    });
-
-    // Return Search
-    if (this.returnDate) {
-      this.busService.searchBuses(this.toCity, this.fromCity).subscribe({
-        next: (returnBusesRes: any[]) => {
-          if (returnBusesRes.length === 0) {
-            this.returnBuses = [];
-          } else {
-            const returnSeatRequests = returnBusesRes.map(bus => this.bookingService.getOccupiedSeats(bus.id, this.returnDate));
-            forkJoin(returnSeatRequests).subscribe((allReturnBookings: any[][]) => {
-              this.returnBuses = returnBusesRes.map((bus, index) => {
-                const busBookings = allReturnBookings[index] || [];
+          forkJoin(seatRequests).subscribe({
+            next: (allBookings: any[][]) => {
+              this.buses = buses.map((bus, index) => {
+                const busBookings = allBookings[index] || [];
                 let occupiedCount = 0;
                 busBookings.forEach((booking: any) => {
                   if (typeof booking === 'string') {
@@ -136,30 +114,68 @@ export class SearchBusesComponent implements OnInit {
                 });
                 return { ...bus, availableSeats: 24 - occupiedCount };
               });
+              
+              // Only turn off if not waiting for return buses
+              if (!this.returnDate) this.isLoading = false; 
+            },
+            error: () => this.isLoading = false
+          });
+        }
+      },
+      error: (err) => { 
+        console.error("Error", err); 
+        this.buses = []; 
+        this.isLoading = false;
+      }
+    });
+
+    // Return Search
+    if (this.returnDate) {
+      this.busService.searchBuses(this.toCity, this.fromCity).subscribe({
+        next: (returnBusesRes: any[]) => {
+          if (returnBusesRes.length === 0) {
+            this.returnBuses = [];
+            this.isLoading = false;
+          } else {
+            const returnSeatRequests = returnBusesRes.map(bus => this.bookingService.getOccupiedSeats(bus.id, this.returnDate));
+            forkJoin(returnSeatRequests).subscribe({
+              next: (allReturnBookings: any[][]) => {
+                this.returnBuses = returnBusesRes.map((bus, index) => {
+                  const busBookings = allReturnBookings[index] || [];
+                  let occupiedCount = 0;
+                  busBookings.forEach((booking: any) => {
+                    if (typeof booking === 'string') {
+                       occupiedCount += booking.split(',').filter(s => s.trim() !== '').length;
+                    } else if (booking && booking.seatNumbers) {
+                       occupiedCount += booking.seatNumbers.split(',').filter((s: string) => s.trim() !== '').length;
+                    }
+                  });
+                  return { ...bus, availableSeats: 24 - occupiedCount };
+                });
+                this.isLoading = false; // Final turn OFF
+              },
+              error: () => this.isLoading = false
             });
           }
         },
-        error: (err) => { console.error("Error", err); this.returnBuses = []; }
+        error: (err) => { 
+          console.error("Error", err); 
+          this.returnBuses = []; 
+          this.isLoading = false;
+        }
       });
-    } else {
-      this.returnBuses = []; 
     }
   }
 
-  // 👉 NEW: Opens the modal instead of routing!
-  // 👉 FIX: Forces the modal to completely refresh every time you click a button!
   openBookingModal(bus: any, journeyDate: string) {
-    this.selectedBusForModal = null; // 1. Destroy the old modal component
-    
+    this.selectedBusForModal = null; 
     setTimeout(() => {
-      // 2. Recreate it 50 milliseconds later with the exact Outbound or Return data
       localStorage.setItem('selectedBus', JSON.stringify(bus));
       localStorage.setItem('travelDate', journeyDate); 
       this.selectedBusForModal = bus; 
     }, 50);
   }
 
-  // 👉 NEW: Clears the modal when closed
   closeBookingModal() {
     this.selectedBusForModal = null;
   }

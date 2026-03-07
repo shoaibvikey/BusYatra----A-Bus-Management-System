@@ -36,6 +36,13 @@
       <label class="small text-muted">Address</label>
       <textarea class="form-control" [(ngModel)]="user.address" name="address" rows="3"></textarea>
     </div>
-    <button type="submit" class="btn btn-primary fw-bold px-4">Save Changes</button>
+
+    <button type="submit" class="btn btn-primary fw-bold px-4" [disabled]="isLoading">
+      <span *ngIf="!isLoading">Save Changes</span>
+      <span *ngIf="isLoading">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Saving...
+      </span>
+    </button>
   </form>
 </div>

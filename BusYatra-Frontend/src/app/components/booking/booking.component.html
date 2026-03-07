@@ -108,9 +108,14 @@
           <button class="btn w-100 py-2 fw-bold text-white" 
                   style="background-color: var(--primary-blue);"
                   (click)="confirmBooking()"
-                  [disabled]="selectedSeats.length === 0">
-            Confirm Booking
+                  [disabled]="selectedSeats.length === 0 || isBooking">
+            <span *ngIf="!isBooking">Confirm Booking</span>
+            <span *ngIf="isBooking">
+              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+              Processing...
+            </span>
           </button>
+
         </div>
       </div>
     </div>

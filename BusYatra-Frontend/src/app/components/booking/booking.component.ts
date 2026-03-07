@@ -31,6 +31,9 @@ export class BookingComponent implements OnInit {
   securityDeposit: number = 0;
   coachFacilities: string[] = ['A/C', 'WiFi', 'Recliner Seats', 'Water Bottle'];
 
+  // --- NEW LOADING TRACKER ---
+  isBooking: boolean = false;
+
   private router = inject(Router);
   private bookingService = inject(BookingService);
 
@@ -126,6 +129,9 @@ export class BookingComponent implements OnInit {
       return;
     }
 
+    // 1. Turn the spinner ON after validations pass
+    this.isBooking = true;
+
     const bookingPayload: any = {
       bus: { id: this.selectedBus.id },
       journeyDate: this.travelDate, 
@@ -147,6 +153,9 @@ export class BookingComponent implements OnInit {
 
     this.bookingService.createBooking(bookingPayload).subscribe({
       next: (res: any) => {
+        // 2. Turn the spinner OFF on success
+        this.isBooking = false;
+        
         Swal.fire({
           title: 'Booking Confirmed!',
           text: 'Transaction ID: ' + res.transactionId + (this.loggedInUser ? '' : '\n(Save this ID to check/cancel your ticket later!)'),
@@ -173,6 +182,8 @@ export class BookingComponent implements OnInit {
         });
       },
       error: (err: any) => {
+        // 3. Turn the spinner OFF on error
+        this.isBooking = false;
         Swal.fire('Booking Failed', 'There was an error processing your ticket.', 'error');
         console.error(err);
       }

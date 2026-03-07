@@ -40,17 +40,15 @@ export class CancelTicketComponent implements OnInit {
           confirmButtonColor: '#0d6efd',
           confirmButtonText: 'Go to My Bookings'
         }).then(() => {
-          this.router.navigateByUrl('/my-bookings'); // Change this route if your dashboard URL is different!
+          this.router.navigateByUrl('/my-bookings'); 
         });
-        return; // Stop the rest of the initialization
+        return; 
       }
     }
 
-    // Existing Date Logic for Guests
     const today = new Date();
     this.minDate = today.toISOString().split('T')[0];
     
-    // Max date is exactly 1 year from today
     const nextYear = new Date();
     nextYear.setFullYear(today.getFullYear() + 1);
     this.maxDate = nextYear.toISOString().split('T')[0];

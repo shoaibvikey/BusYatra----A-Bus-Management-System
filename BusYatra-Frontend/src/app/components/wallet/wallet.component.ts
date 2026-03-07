@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { UserService } from '../../services/user.service';
-import Swal from 'sweetalert2'; // IMPORTED SWEETALERT
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-wallet',
@@ -11,6 +11,10 @@ import Swal from 'sweetalert2'; // IMPORTED SWEETALERT
 })
 export class WalletComponent implements OnInit {
   user: any = {};
+  
+  // --- NEW LOADING TRACKER ---
+  isLoading: boolean = false;
+
   private userService = inject(UserService);
 
   ngOnInit() {
@@ -19,10 +23,10 @@ export class WalletComponent implements OnInit {
     }
   }
 
-  addMoney(amountStr: string) {
+  addMoney(amountInput: HTMLInputElement) {
+    const amountStr = amountInput.value;
     const amount = parseFloat(amountStr);
     
-    // 1. Validation Warning Alert
     if (!amount || amount <= 0) {
       Swal.fire({
         title: 'Invalid Amount',
@@ -33,13 +37,18 @@ export class WalletComponent implements OnInit {
       return;
     }
 
+    // 1. Turn the spinner ON
+    this.isLoading = true;
+
     this.userService.addWalletMoney(this.user.id, amount).subscribe({
       next: (updatedUser) => {
+        // 2. Turn the spinner OFF and clear input
+        this.isLoading = false;
+        amountInput.value = '';
+        
         this.user = updatedUser;
-        // Update local storage so the navbar reflects the new balance instantly if needed
         localStorage.setItem('loggedUser', JSON.stringify(updatedUser));
         
-        // 2. Success Alert
         Swal.fire({
           title: 'Money Added!',
           text: `Successfully added ₹${amount} to your wallet!`,
@@ -49,7 +58,9 @@ export class WalletComponent implements OnInit {
         });
       },
       error: (err) => {
-        // 3. Error Alert
+        // 3. Turn the spinner OFF on error
+        this.isLoading = false;
+        
         Swal.fire({
           title: 'Transaction Failed',
           text: 'Failed to add money to your wallet. Please try again later.',

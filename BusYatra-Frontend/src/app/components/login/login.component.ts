@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
-import Swal from 'sweetalert2'; // IMPORTED SWEETALERT
+import Swal from 'sweetalert2'; 
 
 @Component({
   selector: 'app-login',
@@ -19,6 +19,9 @@ export class LoginComponent {
   loginObj = { email: '', password: '' };
   registerObj = { firstName: '', lastName: '', email: '', contactNo: '', password: '' };
 
+  // --- NEW LOADING TRACKER ---
+  isLoading: boolean = false;
+
   private userService = inject(UserService);
   private router = inject(Router);
 
@@ -27,9 +30,14 @@ export class LoginComponent {
   }
 
   onLogin() {
+    // 1. Turn spinner ON
+    this.isLoading = true;
+
     this.userService.login(this.loginObj).subscribe({
       next: (response: any) => {
-        // UPDATED: SweetAlert Success
+        // 2. Turn spinner OFF on success
+        this.isLoading = false;
+
         Swal.fire({
           title: 'Welcome Back!',
           text: 'You have logged in successfully.',
@@ -38,11 +46,9 @@ export class LoginComponent {
           showConfirmButton: false
         });
         
-        // 1. Save the user data to localStorage
         localStorage.setItem('loggedUser', JSON.stringify(response));
 
-        // 2. The "Traffic Cop" Routing Logic
-        if (response.email === 'admin@travels.com') { // Change this to your admin email
+        if (response.email === 'admin@travels.com') { 
           localStorage.setItem('userRole', 'admin'); 
           this.router.navigateByUrl('/admin');       
         } else {
@@ -51,7 +57,9 @@ export class LoginComponent {
         }
       },
       error: (err: any) => {
-        // UPDATED: SweetAlert Error
+        // 3. Turn spinner OFF on error
+        this.isLoading = false;
+
         Swal.fire({
           title: 'Login Failed!',
           text: 'Incorrect email or password. Please try again.',
@@ -64,19 +72,26 @@ export class LoginComponent {
   }
 
   onRegister() {
+    // 1. Turn spinner ON
+    this.isLoading = true;
+
     this.userService.register(this.registerObj).subscribe({
       next: (response) => {
-        // UPDATED: SweetAlert Registration Success
+        // 2. Turn spinner OFF on success
+        this.isLoading = false;
+
         Swal.fire({
           title: 'Registration Successful!',
           text: 'Welcome! You can now log in.',
           icon: 'success',
           confirmButtonColor: '#0d6efd'
         });
-        this.toggleView(); // Switch back to login view automatically
+        this.toggleView(); 
       },
       error: (err) => {
-        // UPDATED: SweetAlert Registration Error
+        // 3. Turn spinner OFF on error
+        this.isLoading = false;
+
         Swal.fire({
           title: 'Registration Failed',
           text: 'There was an issue creating your account. Please try again.',

@@ -7,7 +7,14 @@
   <h5 class="fw-bold mb-3">Add Money to Wallet</h5>
   <div class="input-group input-group-lg">
     <span class="input-group-text bg-light border-end-0">₹</span>
-    <input type="number" class="form-control border-start-0" #amountInput placeholder="Enter amount">
-    <button class="btn btn-success fw-bold px-4" (click)="addMoney(amountInput.value); amountInput.value=''">Add Funds</button>
+    <input type="number" class="form-control border-start-0" #amountInput placeholder="Enter amount" [disabled]="isLoading">
+    
+    <button class="btn btn-success fw-bold px-4" (click)="addMoney(amountInput)" [disabled]="isLoading">
+      <span *ngIf="!isLoading">Add Funds</span>
+      <span *ngIf="isLoading">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Processing...
+      </span>
+    </button>
   </div>
 </div>
