@@ -42,12 +42,13 @@ public class AdminController {
         
         // Find IDs of users who have bookings
         Set<Long> activeUserIds = allBookings.stream()
+                .filter(b -> b.getUser() != null) // 👉 CRITICAL FIX: Ignore guest bookings!
                 .map(b -> b.getUser().getId())
                 .collect(Collectors.toSet());
                 
         // Filter users who are NOT in the active list
         List<User> inactiveUsers = allUsers.stream()
-                .filter(u -> !activeUserIds.contains(u.getId()) && !"admin@test.com".equals(u.getEmail()))
+                .filter(u -> !activeUserIds.contains(u.getId()) && !"admin@travels.com".equals(u.getEmail())) // 👉 Updated admin email
                 .collect(Collectors.toList());
                 
         return ResponseEntity.ok(inactiveUsers);
