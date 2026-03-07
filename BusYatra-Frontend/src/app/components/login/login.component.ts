@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms'; // Added NgForm here
 import { Router } from '@angular/router';
 import { UserService } from '../../services/user.service';
 import Swal from 'sweetalert2'; 
@@ -29,15 +29,19 @@ export class LoginComponent {
     this.isLoginView = !this.isLoginView;
   }
 
-  onLogin() {
-    // 1. Turn spinner ON
+  // Pass the form reference into the method
+  onLogin(form: NgForm) {
+    // If form is invalid, mark all fields as touched to show red error messages
+    if (form.invalid) {
+      Object.values(form.controls).forEach(control => control.markAsTouched());
+      return; // Stop right here! Don't call the backend.
+    }
+
     this.isLoading = true;
 
     this.userService.login(this.loginObj).subscribe({
       next: (response: any) => {
-        // 2. Turn spinner OFF on success
         this.isLoading = false;
-
         Swal.fire({
           title: 'Welcome Back!',
           text: 'You have logged in successfully.',
@@ -57,9 +61,7 @@ export class LoginComponent {
         }
       },
       error: (err: any) => {
-        // 3. Turn spinner OFF on error
         this.isLoading = false;
-
         Swal.fire({
           title: 'Login Failed!',
           text: 'Incorrect email or password. Please try again.',
@@ -71,15 +73,19 @@ export class LoginComponent {
     });
   }
 
-  onRegister() {
-    // 1. Turn spinner ON
+  // Pass the form reference into the method
+  onRegister(form: NgForm) {
+    // If form is invalid, mark all fields as touched to show red error messages
+    if (form.invalid) {
+      Object.values(form.controls).forEach(control => control.markAsTouched());
+      return; // Stop right here! Don't call the backend.
+    }
+
     this.isLoading = true;
 
     this.userService.register(this.registerObj).subscribe({
       next: (response) => {
-        // 2. Turn spinner OFF on success
         this.isLoading = false;
-
         Swal.fire({
           title: 'Registration Successful!',
           text: 'Welcome! You can now log in.',
@@ -89,12 +95,11 @@ export class LoginComponent {
         this.toggleView(); 
       },
       error: (err) => {
-        // 3. Turn spinner OFF on error
         this.isLoading = false;
-
+        // Now if it fails, it's likely a duplicate email from the backend
         Swal.fire({
           title: 'Registration Failed',
-          text: 'There was an issue creating your account. Please try again.',
+          text: err.error?.message || 'Email might already be registered. Please try again.',
           icon: 'error',
           confirmButtonColor: '#0d6efd'
         });

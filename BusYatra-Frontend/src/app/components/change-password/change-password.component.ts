@@ -1,6 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms'; // Added NgForm here
 import { UserService } from '../../services/user.service';
 import Swal from 'sweetalert2';
 
@@ -18,8 +18,15 @@ export class ChangePasswordComponent {
   
   private userService = inject(UserService);
 
-  onChangePassword() {
-    // 1. Password Mismatch Warning Alert
+  // Pass the NgForm reference in
+  onChangePassword(form: NgForm) {
+    // 1. Validation Check: Stop if the form has errors (e.g., empty fields)
+    if (form.invalid) {
+      Object.values(form.controls).forEach(control => control.markAsTouched());
+      return;
+    }
+
+    // 2. Password Mismatch Warning Alert
     if (this.passwords.new !== this.passwords.confirm) {
       Swal.fire({
         title: 'Mismatch!',
@@ -30,14 +37,14 @@ export class ChangePasswordComponent {
       return;
     }
     
-    // 2. Turn the spinner ON
+    // 3. Turn the spinner ON
     this.isLoading = true;
     
     const user = JSON.parse(localStorage.getItem('loggedUser') || '{}');
     
     this.userService.changePassword(user.id, this.passwords.current, this.passwords.new).subscribe({
       next: (res) => {
-        // 3. Turn the spinner OFF on success
+        // 4. Turn the spinner OFF on success
         this.isLoading = false;
         
         Swal.fire({
@@ -48,15 +55,16 @@ export class ChangePasswordComponent {
           showConfirmButton: false
         });
         
-        this.passwords = { current: '', new: '', confirm: '' }; // clear form
+        form.resetForm(); // Safely clear form and its validation states
+        this.passwords = { current: '', new: '', confirm: '' }; 
       },
       error: (err) => {
-        // 4. Turn the spinner OFF on error
+        // 5. Turn the spinner OFF on error
         this.isLoading = false;
         
         Swal.fire({
           title: 'Update Failed',
-          text: err.error || "Failed to update password. Please check your current password.",
+          text: err.error?.message || err.error || "Failed to update password. Please check your current password.",
           icon: 'error',
           confirmButtonColor: '#0d6efd'
         });

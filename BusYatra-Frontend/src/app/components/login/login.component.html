@@ -8,14 +8,22 @@
 
     <div class="card-body p-4">
       @if (isLoginView) {
-        <form (ngSubmit)="onLogin()">
+        <form #loginForm="ngForm" (ngSubmit)="onLogin(loginForm)" novalidate>
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">Email Address</label>
-            <input type="email" name="loginEmail" [(ngModel)]="loginObj.email" class="form-control form-control-lg" placeholder="name@example.com" required>
+            <input type="email" name="loginEmail" [(ngModel)]="loginObj.email" #loginEmail="ngModel" class="form-control form-control-lg" [ngClass]="{'is-invalid': loginEmail.invalid && loginEmail.touched}" placeholder="name@example.com" required email>
+            <div *ngIf="loginEmail.invalid && loginEmail.touched" class="invalid-feedback small">
+              <span *ngIf="loginEmail.errors?.['required']">Email is required.</span>
+              <span *ngIf="loginEmail.errors?.['email']">Please enter a valid email format.</span>
+            </div>
           </div>
+          
           <div class="mb-4">
             <label class="form-label fw-bold text-secondary">Password</label>
-            <input type="password" name="loginPassword" [(ngModel)]="loginObj.password" class="form-control form-control-lg" placeholder="Enter password" required>
+            <input type="password" name="loginPassword" [(ngModel)]="loginObj.password" #loginPassword="ngModel" class="form-control form-control-lg" [ngClass]="{'is-invalid': loginPassword.invalid && loginPassword.touched}" placeholder="Enter password" required>
+            <div *ngIf="loginPassword.invalid && loginPassword.touched" class="invalid-feedback small">
+              Password is required.
+            </div>
           </div>
           
           <button type="submit" class="btn btn-primary w-100 btn-lg shadow-sm" style="background-color: var(--primary-blue);" [disabled]="isLoading">
@@ -28,28 +36,45 @@
         </form>
       }
       @else {
-        <form (ngSubmit)="onRegister()">
+        <form #registerForm="ngForm" (ngSubmit)="onRegister(registerForm)" novalidate>
           <div class="row">
             <div class="col-md-6 mb-3">
               <label class="form-label fw-bold text-secondary">First Name</label>
-              <input type="text" name="firstName" [(ngModel)]="registerObj.firstName" class="form-control" placeholder="John" required>
+              <input type="text" name="firstName" [(ngModel)]="registerObj.firstName" #firstName="ngModel" class="form-control" [ngClass]="{'is-invalid': firstName.invalid && firstName.touched}" placeholder="John" required>
+              <div *ngIf="firstName.invalid && firstName.touched" class="invalid-feedback small">First name required.</div>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label fw-bold text-secondary">Last Name</label>
-              <input type="text" name="lastName" [(ngModel)]="registerObj.lastName" class="form-control" placeholder="Doe" required>
+              <input type="text" name="lastName" [(ngModel)]="registerObj.lastName" #lastName="ngModel" class="form-control" [ngClass]="{'is-invalid': lastName.invalid && lastName.touched}" placeholder="Doe" required>
+              <div *ngIf="lastName.invalid && lastName.touched" class="invalid-feedback small">Last name required.</div>
             </div>
           </div>
+          
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">Email</label>
-            <input type="email" name="regEmail" [(ngModel)]="registerObj.email" class="form-control" placeholder="email@example.com" required>
+            <input type="email" name="regEmail" [(ngModel)]="registerObj.email" #regEmail="ngModel" class="form-control" [ngClass]="{'is-invalid': regEmail.invalid && regEmail.touched}" placeholder="email@example.com" required email>
+            <div *ngIf="regEmail.invalid && regEmail.touched" class="invalid-feedback small">
+              <span *ngIf="regEmail.errors?.['required']">Email is required.</span>
+              <span *ngIf="regEmail.errors?.['email']">Enter a valid email address.</span>
+            </div>
           </div>
+          
           <div class="mb-3">
             <label class="form-label fw-bold text-secondary">Contact No</label>
-            <input type="text" name="contactNo" [(ngModel)]="registerObj.contactNo" class="form-control" placeholder="10-digit number" required>
+            <input type="text" name="contactNo" [(ngModel)]="registerObj.contactNo" #contactNo="ngModel" class="form-control" [ngClass]="{'is-invalid': contactNo.invalid && contactNo.touched}" placeholder="10-digit number" required pattern="^[0-9]{10}$">
+            <div *ngIf="contactNo.invalid && contactNo.touched" class="invalid-feedback small">
+              <span *ngIf="contactNo.errors?.['required']">Contact number is required.</span>
+              <span *ngIf="contactNo.errors?.['pattern']">Must be exactly 10 digits.</span>
+            </div>
           </div>
+          
           <div class="mb-4">
             <label class="form-label fw-bold text-secondary">Password</label>
-            <input type="password" name="regPassword" [(ngModel)]="registerObj.password" class="form-control" placeholder="Create password" required>
+            <input type="password" name="regPassword" [(ngModel)]="registerObj.password" #regPassword="ngModel" class="form-control" [ngClass]="{'is-invalid': regPassword.invalid && regPassword.touched}" placeholder="Create password (min 6 chars)" required minlength="6">
+            <div *ngIf="regPassword.invalid && regPassword.touched" class="invalid-feedback small">
+              <span *ngIf="regPassword.errors?.['required']">Password is required.</span>
+              <span *ngIf="regPassword.errors?.['minlength']">Must be at least 6 characters.</span>
+            </div>
           </div>
           
           <button type="submit" class="btn btn-success w-100 btn-lg shadow-sm" [disabled]="isLoading">

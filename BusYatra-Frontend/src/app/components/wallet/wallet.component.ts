@@ -1,18 +1,21 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule, NgForm } from '@angular/forms'; // Added FormsModule and NgForm
 import { UserService } from '../../services/user.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-wallet',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule], // Ensure FormsModule is here
   templateUrl: './wallet.component.html'
 })
 export class WalletComponent implements OnInit {
   user: any = {};
   
-  // --- NEW LOADING TRACKER ---
+  // Variable to bind to the input field
+  addAmount: number | null = null; 
+  
   isLoading: boolean = false;
 
   private userService = inject(UserService);
@@ -23,28 +26,22 @@ export class WalletComponent implements OnInit {
     }
   }
 
-  addMoney(amountInput: HTMLInputElement) {
-    const amountStr = amountInput.value;
-    const amount = parseFloat(amountStr);
-    
-    if (!amount || amount <= 0) {
-      Swal.fire({
-        title: 'Invalid Amount',
-        text: 'Please enter a valid amount greater than 0.',
-        icon: 'warning',
-        confirmButtonColor: '#0d6efd'
-      });
+  // Pass the NgForm reference in
+  addMoney(form: NgForm) {
+    // 1. Validation Check: Stop if the form has errors or amount is 0/negative
+    if (form.invalid || !this.addAmount || this.addAmount <= 0) {
+      Object.values(form.controls).forEach(control => control.markAsTouched());
       return;
     }
 
-    // 1. Turn the spinner ON
+    // 2. Turn the spinner ON
     this.isLoading = true;
+    const amount = this.addAmount;
 
     this.userService.addWalletMoney(this.user.id, amount).subscribe({
       next: (updatedUser) => {
-        // 2. Turn the spinner OFF and clear input
+        // 3. Turn the spinner OFF and reset form
         this.isLoading = false;
-        amountInput.value = '';
         
         this.user = updatedUser;
         localStorage.setItem('loggedUser', JSON.stringify(updatedUser));
@@ -56,9 +53,11 @@ export class WalletComponent implements OnInit {
           timer: 2000,
           showConfirmButton: false
         });
+
+        form.resetForm(); // Clears input and red validation lines
       },
       error: (err) => {
-        // 3. Turn the spinner OFF on error
+        // 4. Turn the spinner OFF on error
         this.isLoading = false;
         
         Swal.fire({

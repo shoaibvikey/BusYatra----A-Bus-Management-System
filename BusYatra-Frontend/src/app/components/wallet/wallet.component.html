@@ -5,16 +5,36 @@
 
 <div class="card shadow-sm border-0 p-4">
   <h5 class="fw-bold mb-3">Add Money to Wallet</h5>
-  <div class="input-group input-group-lg">
-    <span class="input-group-text bg-light border-end-0">₹</span>
-    <input type="number" class="form-control border-start-0" #amountInput placeholder="Enter amount" [disabled]="isLoading">
+  
+  <form #walletForm="ngForm" (ngSubmit)="addMoney(walletForm)" novalidate>
     
-    <button class="btn btn-success fw-bold px-4" (click)="addMoney(amountInput)" [disabled]="isLoading">
-      <span *ngIf="!isLoading">Add Funds</span>
-      <span *ngIf="isLoading">
-        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-        Processing...
-      </span>
-    </button>
-  </div>
+    <div class="input-group input-group-lg mb-1">
+      <span class="input-group-text bg-light border-end-0">₹</span>
+      
+      <input type="number" 
+             class="form-control border-start-0" 
+             name="amount" 
+             [(ngModel)]="addAmount" 
+             #amount="ngModel" 
+             placeholder="Enter amount" 
+             [ngClass]="{'is-invalid': amount.invalid && amount.touched}" 
+             required 
+             min="1" 
+             [disabled]="isLoading">
+      
+      <button type="submit" class="btn btn-success fw-bold px-4" [disabled]="isLoading">
+        <span *ngIf="!isLoading">Add Funds</span>
+        <span *ngIf="isLoading">
+          <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+          Processing...
+        </span>
+      </button>
+    </div>
+    
+    <div *ngIf="amount.invalid && amount.touched" class="text-danger small mt-1 ms-5">
+      <span *ngIf="amount.errors?.['required']">Please enter an amount to add.</span>
+      <span *ngIf="amount.errors?.['min']">Amount must be greater than ₹0.</span>
+    </div>
+    
+  </form>
 </div>

@@ -1,6 +1,7 @@
 <div class="card shadow-sm border-0 p-4">
   <h4 class="fw-bold mb-4">My Profile</h4>
-  <form (ngSubmit)="onUpdate()">
+  <form #profileForm="ngForm" (ngSubmit)="onUpdate(profileForm)" novalidate>
+    
     <div class="row g-3 mb-3">
       <div class="col-md-6">
         <label class="small text-muted">First Name</label>
@@ -11,30 +12,41 @@
         <input type="text" class="form-control bg-light" [value]="user.lastName" readonly>
       </div>
     </div>
+    
     <div class="mb-3">
       <label class="small text-muted">Email</label>
       <input type="email" class="form-control bg-light" [value]="user.email" readonly>
     </div>
+    
     <div class="row g-3 mb-3">
       <div class="col-md-6">
         <label class="small text-muted">Gender</label>
-        <select class="form-select" [(ngModel)]="user.gender" name="gender">
+        <select class="form-select" [(ngModel)]="user.gender" name="gender" #gender="ngModel" [ngClass]="{'is-invalid': gender.invalid && gender.touched}" required>
           <option value="Male">Male</option>
           <option value="Female">Female</option>
         </select>
+        <div *ngIf="gender.invalid && gender.touched" class="invalid-feedback small">Please select a gender.</div>
       </div>
       <div class="col-md-6">
         <label class="small text-muted">Date of Birth</label>
-        <input type="date" class="form-control" [(ngModel)]="user.dob" name="dob">
+        <input type="date" class="form-control" [(ngModel)]="user.dob" name="dob" #dob="ngModel" [ngClass]="{'is-invalid': dob.invalid && dob.touched}" required>
+        <div *ngIf="dob.invalid && dob.touched" class="invalid-feedback small">Date of Birth is required.</div>
       </div>
     </div>
+    
     <div class="mb-3">
       <label class="small text-muted">Contact Number</label>
-      <input type="text" class="form-control" [(ngModel)]="user.contactNo" name="contactNo">
+      <input type="text" class="form-control" [(ngModel)]="user.contactNo" name="contactNo" #contactNo="ngModel" [ngClass]="{'is-invalid': contactNo.invalid && contactNo.touched}" required pattern="^[0-9]{10}$">
+      <div *ngIf="contactNo.invalid && contactNo.touched" class="invalid-feedback small">
+        <span *ngIf="contactNo.errors?.['required']">Contact number is required.</span>
+        <span *ngIf="contactNo.errors?.['pattern']">Must be exactly 10 digits.</span>
+      </div>
     </div>
+    
     <div class="mb-4">
       <label class="small text-muted">Address</label>
-      <textarea class="form-control" [(ngModel)]="user.address" name="address" rows="3"></textarea>
+      <textarea class="form-control" [(ngModel)]="user.address" name="address" rows="3" #address="ngModel" [ngClass]="{'is-invalid': address.invalid && address.touched}" required></textarea>
+      <div *ngIf="address.invalid && address.touched" class="invalid-feedback small">Address is required.</div>
     </div>
 
     <button type="submit" class="btn btn-primary fw-bold px-4" [disabled]="isLoading">

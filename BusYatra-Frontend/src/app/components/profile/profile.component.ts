@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, NgForm } from '@angular/forms'; // Added NgForm here
 import { UserService } from '../../services/user.service';
 import Swal from 'sweetalert2';
 
@@ -24,13 +24,20 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  onUpdate() {
-    // 1. Turn the spinner ON
+  // Pass the NgForm reference in
+  onUpdate(form: NgForm) {
+    // 1. Validation Check: Stop if the form has errors
+    if (form.invalid) {
+      Object.values(form.controls).forEach(control => control.markAsTouched());
+      return; 
+    }
+
+    // 2. Turn the spinner ON
     this.isLoading = true;
 
     this.userService.updateProfile(this.user.id, this.user).subscribe({
       next: (res) => {
-        // 2. Turn the spinner OFF on success
+        // 3. Turn the spinner OFF on success
         this.isLoading = false;
 
         localStorage.setItem('loggedUser', JSON.stringify(res));
@@ -44,12 +51,12 @@ export class ProfileComponent implements OnInit {
         });
       },
       error: (err) => {
-        // 3. Turn the spinner OFF on error
+        // 4. Turn the spinner OFF on error
         this.isLoading = false;
 
         Swal.fire({
           title: 'Update Failed',
-          text: 'There was a problem updating your profile. Please try again.',
+          text: 'There was a problem updating your profile. Please check your details and try again.',
           icon: 'error',
           confirmButtonColor: '#0d6efd'
         });
