@@ -5,6 +5,7 @@ import { BusService } from '../../services/bus.service';
 import { UserService } from '../../services/user.service';
 import { BookingService } from '../../services/booking.service';
 import { FeedbackService } from '../../services/feedback.service';
+import { forkJoin } from 'rxjs'; 
 import Swal from 'sweetalert2';
 
 @Component({
@@ -23,7 +24,12 @@ export class AdminDashboardComponent implements OnInit {
   
   filteredBookings: any[] = [];
   timeFilter: string = 'ALL';
-  lastMonthProfit: number = 0;
+
+  // --- NEW PROFIT METRICS ---
+  todaysProfit: number = 0;
+  thisMonthProfit: number = 0;
+  previousMonthProfit: number = 0;
+  thisYearProfit: number = 0;
   totalProfit: number = 0;
 
   frequentRoute: string = 'Calculating...';
@@ -34,8 +40,7 @@ export class AdminDashboardComponent implements OnInit {
   selectedBooking: any = null;
   newReservationStatus: string = '';
 
-  // --- NEW LOADING TRACKERS ---
-  isInitialLoading: boolean = true; // Tracks full page load
+  isInitialLoading: boolean = true; 
   isSavingBus: boolean = false;
   isUpdatingStatus: boolean = false;
 
@@ -60,42 +65,36 @@ export class AdminDashboardComponent implements OnInit {
   loadAdminData() {
     this.isInitialLoading = true;
 
-    // 1. Fetch Profits (Fallback to 0 on error)
-    this.userService.getTotalProfits().subscribe({
-      next: (profit: any) => this.totalProfit = profit || 0,
-      error: (err: any) => { console.error("Profits API missing", err); this.totalProfit = 0; }
-    });
-
-    // 2. Fetch Inactive Users (Fallback to empty array on error)
+    // 1. Fetch Inactive Users (Fails gracefully until you add the Java backend endpoint)
     this.userService.getInactiveUsers().subscribe({
       next: (users: any) => this.inactiveUsers = users || [],
-      error: (err: any) => { console.error("Inactive Users API missing", err); this.inactiveUsers = []; }
+      error: (err: any) => { console.warn("Waiting on Java backend for inactive-users endpoint"); this.inactiveUsers = []; }
     });
 
-    // 3. Fetch Preferred Bus (Fallback to N/A on error)
+    // 2. Fetch Preferred Bus 
     this.userService.getPreferredBus().subscribe({
       next: (res: any) => this.preferredBus = res?.type || 'N/A',
-      error: (err: any) => { console.error("Preferred Bus API missing", err); this.preferredBus = 'N/A'; }
+      error: (err: any) => { this.preferredBus = 'N/A'; }
     });
 
-    // 4. Fetch Frequent Route (Fallback to N/A on error)
+    // 3. Fetch Frequent Route 
     this.userService.getFrequentRoute().subscribe({
       next: (res: any) => this.frequentRoute = res?.route || 'N/A',
-      error: (err: any) => { console.error("Frequent Route API missing", err); this.frequentRoute = 'N/A'; }
+      error: (err: any) => { this.frequentRoute = 'N/A'; }
     });
 
-    // 5. Fetch Bookings (This is the critical one that turns off the loader)
+    // 4. Fetch ALL Bookings and calculate all profits locally!
     this.bookingService.getAllBookings().subscribe({
       next: (res: any[]) => {
         this.allBookings = res || [];
         this.applyTimeFilter();
-        this.calculateLastMonthProfit();
-        this.isInitialLoading = false; // Turn off spinner!
+        this.calculateProfits(); // The new super-calculator
+        this.isInitialLoading = false; 
       },
       error: (err: any) => {
         console.error('Failed to load bookings', err);
         this.allBookings = [];
-        this.isInitialLoading = false; // Turn off spinner even if it fails!
+        this.isInitialLoading = false; 
       }
     });
   }
@@ -126,18 +125,44 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  calculateLastMonthProfit() {
+  // --- NEW: Calculates all profit metrics by matching date strings ---
+  calculateProfits() {
     const today = new Date();
-    const lastMonth = today.getMonth() === 0 ? 11 : today.getMonth() - 1;
-    const yearOfLastMonth = today.getMonth() === 0 ? today.getFullYear() - 1 : today.getFullYear();
+    
+    const currentYear = today.getFullYear();
+    const currentMonth = today.getMonth() + 1; // 1-12
+    const currentDay = today.getDate();
 
-    this.lastMonthProfit = this.allBookings
-      .filter(b => b.status === 'BOOKED')
-      .filter(b => {
-        const d = new Date(b.journeyDate);
-        return d.getMonth() === lastMonth && d.getFullYear() === yearOfLastMonth;
-      })
-      .reduce((sum, b) => sum + (b.amountPaid || 0), 0);
+    // Create prefix strings to match against the journeyDate (e.g. "2026-03-07")
+    const todayStr = `${currentYear}-${('0' + currentMonth).slice(-2)}-${('0' + currentDay).slice(-2)}`;
+    const thisMonthStr = `${currentYear}-${('0' + currentMonth).slice(-2)}`;
+    const thisYearStr = `${currentYear}`;
+
+    // Calculate last month's prefix
+    let pYear = currentYear;
+    let pMonth = currentMonth - 1;
+    if (pMonth === 0) { pMonth = 12; pYear--; }
+    const prevMonthStr = `${pYear}-${('0' + pMonth).slice(-2)}`;
+
+    let tProf = 0, mProf = 0, pmProf = 0, yProf = 0, allProf = 0;
+
+    this.allBookings.forEach(b => {
+      if (b.status === 'BOOKED') {
+        const amt = b.amountPaid || 0;
+        allProf += amt;
+
+        if (b.journeyDate === todayStr) tProf += amt;
+        if (b.journeyDate.startsWith(thisMonthStr)) mProf += amt;
+        if (b.journeyDate.startsWith(prevMonthStr)) pmProf += amt;
+        if (b.journeyDate.startsWith(thisYearStr)) yProf += amt;
+      }
+    });
+
+    this.totalProfit = allProf;
+    this.todaysProfit = tProf;
+    this.thisMonthProfit = mProf;
+    this.previousMonthProfit = pmProf;
+    this.thisYearProfit = yProf;
   }
 
   loadAllBuses() {
