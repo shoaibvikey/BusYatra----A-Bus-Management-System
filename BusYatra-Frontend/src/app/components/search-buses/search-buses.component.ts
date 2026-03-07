@@ -27,7 +27,7 @@ export class SearchBusesComponent implements OnInit {
   buses: any[] = []; 
   returnBuses: any[] = []; 
 
-  // --- NEW LOADING TRACKER ---
+  // --- LOADING TRACKER ---
   isLoading: boolean = false;
 
   selectedBusForModal: any = null;
@@ -88,21 +88,24 @@ export class SearchBusesComponent implements OnInit {
   onSearch() {
     if (!this.fromCity || !this.toCity || !this.travelDate) return; 
     
-    // 1. Turn ON the loading state
+    // 1. Reset state and start loading
     this.isLoading = true;
     this.hasSearched = true; 
+    this.buses = [];
+    this.returnBuses = [];
 
     // Outbound Search
     this.busService.searchBuses(this.fromCity, this.toCity).subscribe({
-      next: (buses: any[]) => {
-        if (buses.length === 0) {
+      next: (busesRes: any[]) => {
+        if (busesRes.length === 0) {
           this.buses = [];
-          this.isLoading = false; // Turn OFF if no buses
+          if (!this.returnDate) this.isLoading = false; 
         } else {
-          const seatRequests = buses.map(bus => this.bookingService.getOccupiedSeats(bus.id, this.travelDate));
+          // Fetch seat counts for each bus
+          const seatRequests = busesRes.map(bus => this.bookingService.getOccupiedSeats(bus.id, this.travelDate));
           forkJoin(seatRequests).subscribe({
             next: (allBookings: any[][]) => {
-              this.buses = buses.map((bus, index) => {
+              this.buses = busesRes.map((bus, index) => {
                 const busBookings = allBookings[index] || [];
                 let occupiedCount = 0;
                 busBookings.forEach((booking: any) => {
@@ -124,12 +127,11 @@ export class SearchBusesComponent implements OnInit {
       },
       error: (err) => { 
         console.error("Error", err); 
-        this.buses = []; 
         this.isLoading = false;
       }
     });
 
-    // Return Search
+    // Return Search (Logic improved to handle loading state separately)
     if (this.returnDate) {
       this.busService.searchBuses(this.toCity, this.fromCity).subscribe({
         next: (returnBusesRes: any[]) => {
@@ -152,15 +154,14 @@ export class SearchBusesComponent implements OnInit {
                   });
                   return { ...bus, availableSeats: 24 - occupiedCount };
                 });
-                this.isLoading = false; // Final turn OFF
+                this.isLoading = false; 
               },
               error: () => this.isLoading = false
             });
           }
         },
         error: (err) => { 
-          console.error("Error", err); 
-          this.returnBuses = []; 
+          console.error("Return Search Error", err); 
           this.isLoading = false;
         }
       });
