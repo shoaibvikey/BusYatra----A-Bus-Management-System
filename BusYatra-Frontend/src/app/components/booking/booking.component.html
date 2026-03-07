@@ -105,16 +105,26 @@
           
           <p class="text-end small text-muted mb-4" *ngIf="securityDeposit > 0">Includes ₹5000 refundable deposit</p>
 
-          <button class="btn w-100 py-2 fw-bold text-white" 
-                  style="background-color: var(--primary-blue);"
-                  (click)="confirmBooking()"
-                  [disabled]="selectedSeats.length === 0 || isBooking">
-            <span *ngIf="!isBooking">Confirm Booking</span>
-            <span *ngIf="isBooking">
-              <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              Processing...
-            </span>
-          </button>
+          <div *ngIf="isBooking" class="text-center py-2">
+            <span class="spinner-border text-primary" role="status" aria-hidden="true"></span>
+            <p class="text-muted small mt-2 mb-0">Processing Payment...</p>
+          </div>
+
+          <div *ngIf="!isBooking">
+            <button *ngIf="loggedInUser" 
+                    class="btn w-100 py-2 fw-bold text-white mb-2" 
+                    style="background-color: var(--primary-blue);"
+                    (click)="payWithWallet()"
+                    [disabled]="selectedSeats.length === 0">
+              <i class="bi bi-wallet2 me-2"></i> Pay with Wallet
+            </button>
+
+            <button class="btn btn-dark w-100 py-2 fw-bold" 
+                    (click)="payWithRazorpay()"
+                    [disabled]="selectedSeats.length === 0">
+              <i class="bi bi-credit-card-fill me-2"></i> Pay with Razorpay
+            </button>
+          </div>
 
         </div>
       </div>

@@ -21,17 +21,14 @@ export class BookingComponent implements OnInit {
   
   travelDate: string = '';
 
-  // Guest Checkout Variables
   guestName: string = ''; 
   guestEmail: string = '';
   guestPhone: string = '';
 
-  // 👉 NEW: Coach Bus Variables
   withDriver: boolean = true;
   securityDeposit: number = 0;
   coachFacilities: string[] = ['A/C', 'WiFi', 'Recliner Seats', 'Water Bottle'];
 
-  // --- NEW LOADING TRACKER ---
   isBooking: boolean = false;
 
   private router = inject(Router);
@@ -97,10 +94,9 @@ export class BookingComponent implements OnInit {
     this.calculateFare();
   }
 
-  // 👉 NEW: Handles the Security Deposit logic
   onDriverOptionChange() {
     if (!this.withDriver) {
-      this.securityDeposit = 5000; // Flat ₹5000 deposit for driving it yourself
+      this.securityDeposit = 5000; 
     } else {
       this.securityDeposit = 0;
     }
@@ -109,7 +105,6 @@ export class BookingComponent implements OnInit {
 
   calculateFare() {
     if (this.selectedBus) {
-      // 👉 FIX: Adds the security deposit to the total fare
       this.totalFare = (this.selectedSeats.length * this.selectedBus.fare) + this.securityDeposit;
     }
   }
@@ -118,7 +113,38 @@ export class BookingComponent implements OnInit {
     this.closeModalAndNavigate('/login');
   }
 
-  confirmBooking() {
+  // --- 1. WALLET PAYMENT LOGIC ---
+  payWithWallet() {
+    if (this.selectedSeats.length === 0) {
+      Swal.fire('Wait!', 'Please select at least one seat.', 'warning');
+      return;
+    }
+
+    // CHECK WALLET BALANCE
+    if (this.loggedInUser.walletBalance < this.totalFare) {
+      Swal.fire({
+        title: 'Insufficient Funds',
+        text: `Your wallet balance is ₹${this.loggedInUser.walletBalance}, but the total fare is ₹${this.totalFare}.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#0d6efd',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Add Money to Wallet',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.closeModalAndNavigate('/dashboard/wallet');
+        }
+      });
+      return;
+    }
+
+    // If balance is sufficient, process the booking
+    this.processBooking('Wallet');
+  }
+
+  // --- 2. RAZORPAY PAYMENT LOGIC ---
+  async payWithRazorpay() {
     if (this.selectedSeats.length === 0) {
       Swal.fire('Wait!', 'Please select at least one seat.', 'warning');
       return;
@@ -129,7 +155,58 @@ export class BookingComponent implements OnInit {
       return;
     }
 
-    // 1. Turn the spinner ON after validations pass
+    const isRazorpayLoaded = await this.loadRazorpayScript();
+    if (!isRazorpayLoaded) {
+      Swal.fire('Error', 'Razorpay failed to load. Please check your connection.', 'error');
+      return;
+    }
+
+    const options = {
+      key: 'rzp_test_SOPJGHgnqfvBEz', // <-- Replace with your free Razorpay Test Key if you have one
+      amount: this.totalFare * 100, // Amount is in paise (multiply by 100)
+      currency: 'INR',
+      name: 'BusYatra Travels',
+      description: 'E-Ticket Reservation',
+      image: 'https://cdn-icons-png.flaticon.com/512/3202/3202926.png', // Bus Icon
+      handler: (response: any) => {
+        // Payment Succeeded!
+        this.processBooking('Razorpay', response.razorpay_payment_id);
+      },
+      prefill: {
+        name: this.loggedInUser ? `${this.loggedInUser.firstName} ${this.loggedInUser.lastName}` : this.guestName,
+        email: this.loggedInUser ? this.loggedInUser.email : this.guestEmail,
+        contact: this.loggedInUser ? this.loggedInUser.contactNo : this.guestPhone
+      },
+      theme: {
+        color: '#0d6efd'
+      }
+    };
+
+    const rzp = new (window as any).Razorpay(options);
+    
+    rzp.on('payment.failed', (response: any) => {
+      Swal.fire('Payment Failed', response.error.description, 'error');
+    });
+
+    rzp.open();
+  }
+
+  // Helper method to dynamically load Razorpay script
+  private loadRazorpayScript(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if ((window as any).Razorpay) {
+        return resolve(true);
+      }
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  }
+
+  // --- 3. MASTER BOOKING PROCESSOR ---
+  private processBooking(paymentMethod: string, transactionId?: string) {
     this.isBooking = true;
 
     const bookingPayload: any = {
@@ -138,9 +215,10 @@ export class BookingComponent implements OnInit {
       seatNumbers: this.selectedSeats.join(','), 
       amountPaid: this.totalFare,
       status: "BOOKED",
-      // 👉 NEW: Attaching the new DB fields
       withDriver: this.loggedInUser ? this.withDriver : true, 
-      securityDeposit: this.loggedInUser ? this.securityDeposit : 0.0
+      securityDeposit: this.loggedInUser ? this.securityDeposit : 0.0,
+      paymentMethod: paymentMethod,
+      paymentId: transactionId || 'WALLET-TXN'
     };
 
     if (this.loggedInUser) {
@@ -153,9 +231,14 @@ export class BookingComponent implements OnInit {
 
     this.bookingService.createBooking(bookingPayload).subscribe({
       next: (res: any) => {
-        // 2. Turn the spinner OFF on success
         this.isBooking = false;
         
+        // Frontend local balance deduction (optional, assuming backend handles real deduction)
+        if (paymentMethod === 'Wallet' && this.loggedInUser) {
+          this.loggedInUser.walletBalance -= this.totalFare;
+          localStorage.setItem('loggedUser', JSON.stringify(this.loggedInUser));
+        }
+
         Swal.fire({
           title: 'Booking Confirmed!',
           text: 'Transaction ID: ' + res.transactionId + (this.loggedInUser ? '' : '\n(Save this ID to check/cancel your ticket later!)'),
@@ -169,7 +252,7 @@ export class BookingComponent implements OnInit {
         }).then((result) => {
           if (result.isConfirmed) {
             if(this.loggedInUser) {
-              this.closeModalAndNavigate('/my-bookings');
+              this.closeModalAndNavigate('/dashboard/bookings');
             } else {
               this.printGuestTicket(res);
               this.closeModalAndNavigate('/'); 
@@ -182,7 +265,6 @@ export class BookingComponent implements OnInit {
         });
       },
       error: (err: any) => {
-        // 3. Turn the spinner OFF on error
         this.isBooking = false;
         Swal.fire('Booking Failed', 'There was an error processing your ticket.', 'error');
         console.error(err);
@@ -192,7 +274,6 @@ export class BookingComponent implements OnInit {
 
   printGuestTicket(booking: any) {
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BusYatra-GuestTicket-${booking.transactionId}`;
-
     const ticketHtml = `
       <html>
         <head>
@@ -224,7 +305,6 @@ export class BookingComponent implements OnInit {
               <h2>BusYatra Travels 🚌</h2>
               <p>Official Guest E-Ticket</p>
             </div>
-            
             <div class="content-wrapper">
               <div class="details">
                 <p><strong>Transaction ID:</strong> ${booking.transactionId}</p>
@@ -235,27 +315,22 @@ export class BookingComponent implements OnInit {
                 <p><strong>Seat Number(s):</strong> ${booking.seatNumbers}</p>
                 <p><strong>Total Paid:</strong> <span class="amount">₹${booking.amountPaid}</span></p>
               </div>
-              
               <div class="qr-code">
                 <img src="${qrCodeUrl}" alt="Ticket QR Code">
                 <small>Scan to Verify</small>
               </div>
             </div>
-
             <div class="footer">
               <p>Please present this E-Ticket along with a valid Government Photo ID at boarding.</p>
               <p>To cancel this ticket, visit our website and use your Transaction ID and Email.</p>
             </div>
           </div>
           <script>
-            window.onload = function() { 
-              setTimeout(function() { window.print(); }, 500); 
-            }
+            window.onload = function() { setTimeout(function() { window.print(); }, 500); }
           </script>
         </body>
       </html>
     `;
-
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(ticketHtml);
